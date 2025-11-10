@@ -7,19 +7,23 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  lint-and-type-check:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
       
-      - name: Run Linter in Docker Container
-        run: make lint-check
+      - name: Run Linter in Docker
+        run: make ci-lint-check
 
-      - name: Run Type Check in Docker Container
-        run: make type-check
+      - name: Run Type Check in Docker
+        run: make ci-type-check
 
-      - name: Run Tests in Docker Container
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Tests in Docker
         run: make test
-
-

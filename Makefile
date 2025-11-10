@@ -79,19 +79,19 @@ test-down:
 	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) down -v
 
-.PHONY: lint
+.PHONY: lint-check
 lint-check:
 	@echo "🔍 Running Ruff lint check..."
 	ruff check
 
-PHONY: lint-fix-format
+.PHONY: lint-fix-format
 lint-fix-format:
 	ruff check --fix && ruff format
 
 .PHONY: type-check
 type-check:
 	@echo "🧠 Running Mypy type checks..."
-	mypy --config-file pyproject.toml
+	mypy --config-file pyproject.toml app/
 
 # ======================================================
 # PROD COMMANDS
@@ -137,3 +137,20 @@ pip-install-test:
 pip-install-prod:
 	@echo "🧹 Uninstall all libraries..."
 	pip install -r requirements/prod.txt
+
+# ======================================================
+# CI WORKFLOW COMMANDS
+# ======================================================
+
+.PHONY: ci-lint-check
+ci-lint:
+	@echo "🔍 Running Ruff lint check in Docker..."
+	@env $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | xargs) \
+	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) run --rm backend ruff check
+
+.PHONY: ci-type-check
+ci-type-check:
+	@echo "🧠 Running Mypy type checks in Docker..."
+	@env $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | xargs) \
+	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) run --rm backend mypy --config-file pyproject.toml
+
