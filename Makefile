@@ -38,7 +38,7 @@ createsuperuser:
 	python manage.py createsuperuser
 
 # ======================================================
-# DEV COMMANDS
+# DEVELOPMENT COMMANDS
 # ======================================================
 
 .PHONY: dev
@@ -80,25 +80,67 @@ test-down:
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) down -v
 
 # ======================================================
-# CODE QUALITY COMMANDS
+# CODE QUALITY & VALIDATION COMMANDS
 # ======================================================
+
+.PHONY: lint
+lint:
+	@echo "🧹 Running Ruff linter & formatter (auto-fix)..."
+	ruff check --fix && ruff format
 
 .PHONY: lint-check
 lint-check:
-	@echo "🔍 Running Ruff lint check..."
+	@echo "🔍 Running Ruff lint check (no fixes)..."
 	ruff check
 
 .PHONY: type-check
 type-check:
-	@echo "🧠 Running Mypy type checks..."
+	@echo "🔍 Running Mypy type checks..."
 	mypy --config-file pyproject.toml
 
-.PHONY: lint-fix-format
-lint-fix-format:
-	ruff check --fix && ruff format
+.PHONY: hooks-check
+hooks-check:
+	@echo "🧩 Running official pre-commit hooks (YAML, TOML, big files, etc.)..."
+	@bash -c "pre-commit run check-yaml --all-files || true"
+	@bash -c "pre-commit run check-toml --all-files || true"
+	@bash -c "pre-commit run check-added-large-files --all-files || true"
+	@bash -c "pre-commit run check-merge-conflict --all-files || true"
+
+.PHONY: detect-secrets
+detect-secrets:
+	@echo "🔐 Detecting secrets in codebase..."
+	@if [ -f .secrets.baseline ]; then \
+		detect-secrets-hook --baseline .secrets.baseline $$(git ls-files); \
+	else \
+		detect-secrets-hook $$(git ls-files); \
+	fi
+
+.PHONY: security-check
+security-check:
+	@echo "🔒 Running Bandit security scan..."
+	bandit -r ./app -c pyproject.toml
+	@echo "🛡️  Running Pip-audit for dependency vulnerabilities..."
+	pip-audit -r requirements/dev.txt
+
+.PHONY: quality-checks
+quality-checks:
+	@echo "🔍 Running code quality checks..."
+	@echo ""
+	@printf "  Lint check...................... "
+	@make lint-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
+	@printf "  Type check...................... "
+	@make type-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
+	@printf "  Pre-commit hooks validations.... "
+	@make hooks-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
+	@printf "  Detect secrets.................. "
+	@make detect-secrets > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
+	@printf "  Security scan (Bandit + Audit).. "
+	@make security-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
+	@echo ""
+	@echo "✅ All quality checks completed"
 
 # ======================================================
-# PROD COMMANDS
+# PRODUCTION COMMANDS
 # ======================================================
 
 .PHONY: prod
@@ -120,7 +162,7 @@ prod-down:
 .PHONY: setup
 setup:
 	@echo "🚀 Installing pre-commit hooks..."
-	pre-commit install
+	pre-commit install --hook-type pre-commit --hook-type pre-push
 
 .PHONY: freeze
 pip-freeze:

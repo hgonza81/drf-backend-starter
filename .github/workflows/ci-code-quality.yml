@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
 
       - name: Install dev dependencies
         run: |
@@ -30,5 +30,20 @@ jobs:
 
       - name: Run type check
         run: |
-          echo "🧠 Running type check..."
+          echo "🔍  Running type check..."
           make type-check
+
+      - name: Run pre-commit hooks checks
+        run: |
+          echo "🔍  Running pre-commit hook checks..."
+          make hooks-check
+
+      - name: Detecting secrets
+        run: |
+          echo "🔍  Detecting secrets..."
+          make detect-secrets
+
+      - name: Security checks
+        run: |
+          echo "🔍  Running security checks..."
+          make detect-secrets

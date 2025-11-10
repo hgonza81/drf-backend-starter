@@ -1,30 +1,78 @@
-# To UPDATE and TEST use: pre-commit install && pre-commit run --all-files
-repos:
-  # --------------------------------------------------
-  # Ruff - Linter & Formatter
-  # --------------------------------------------------
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.4
-    hooks:
-      - id: ruff
-        name: Ruff (linter)
-        args: ["--fix"]     # Automatically fix simple linting issues
-      - id: ruff-format
-        name: Ruff (formatter)
+# ==================================================
+# PRE-COMMIT CONFIGURATION
+# ==================================================
+# SETUP:
+#   pre-commit install --hook-type pre-commit --hook-type pre-push
+# TEST ALL:
+#   pre-commit run --all-files
+# UPDATE:
+#   pre-commit autoupdate && pre-commit run --all-files
 
-  # --------------------------------------------------
-  # Mypy - Type Checker (with Django plugin)
-  # --------------------------------------------------
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit, pre-push]
+
+# ==================================================
+# PRE-COMMIT HOOKS (fast checks)
+# ==================================================
+repos:
+  - repo: local
     hooks:
-      - id: mypy
-        name: Mypy (type checker)
-        types: [python]
-        additional_dependencies:
-          - djangorestframework==3.16.1
-          - django-stubs==5.2.7
-          - django-stubs-ext==5.2.7
-          - djangorestframework-stubs==3.16.5
-          - types-requests
-          - types-PyYAML
+      # --------------------------------------------------
+      # Ruff + format (lint auto-fix)
+      # --------------------------------------------------
+      - id: lint
+        name: Lint (Ruff auto-fix)
+        entry: bash -c 'source .venv/bin/activate && make lint'
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+        stages: [pre-commit]
+      - id: check-toml
+        stages: [pre-commit]
+      - id: check-added-large-files
+        stages: [pre-commit]
+      - id: check-merge-conflict
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
+      # --------------------------------------------------
+      # Detect secrets
+      # --------------------------------------------------
+      - id: detect-secrets
+        name: Detect secrets
+        entry: bash -c 'source .venv/bin/activate && make detect-secrets'
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+# ==================================================
+# PRE-PUSH HOOKS (heavier checks)
+# ==================================================
+  - repo: local
+    hooks:
+      # --------------------------------------------------
+      # Mypy type checks
+      # --------------------------------------------------
+      - id: type-check
+        name: Type checking
+        entry: bash -c 'source .venv/bin/activate && make type-check'
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+      # --------------------------------------------------
+      # Security checks (Bandit + Pip-audit)
+      # --------------------------------------------------
+      - id: security-check
+        name: Security checks
+        entry: bash -c 'source .venv/bin/activate && make security-check'
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+

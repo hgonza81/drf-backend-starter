@@ -1,7 +1,5 @@
 -r base.txt
 
 pytest==9.0.0
-pytest-django==4.11.1
 pytest-cov==6.0.0
-iniconfig==2.3.0
-pluggy==1.6.0
+pytest-django==4.11.1

@@ -41,9 +41,15 @@ src = ["app"]
 # ======================================================
 [tool.mypy]
 files = ["app"]
-python_version = "3.12"
+python_version = "3.14"
 ignore_missing_imports = true
 plugins = ["mypy_django_plugin.main"]
 
 [tool.django-stubs]
 django_settings_module = "app.core.settings.dev"
+
+# ======================================================
+# Bandit configuration
+# ======================================================
+[tool.bandit]
+exclude_dirs = ["*/tests/*", "/tests/*", "*/migrations/*"]
