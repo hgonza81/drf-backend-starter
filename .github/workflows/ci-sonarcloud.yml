@@ -1,0 +1,25 @@
+name: SonarCloud Analysis
+
+on:
+  workflow_run:
+    workflows: ["Tests & Coverage"]
+    types: [completed]
+
+jobs:
+  sonarcloud:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v3
+        with:
+          args: >
+            -Dsonar.projectKey=drf-backend-starter
+            -Dsonar.organization=hgonza81
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io

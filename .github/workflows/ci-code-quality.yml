@@ -1,0 +1,34 @@
+name: Code Quality Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  code-quality-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dev dependencies
+        run: |
+          make pip-install-dev
+
+      - name: Run linter check
+        run: |
+          echo "🔍 Running linter check..."
+          make lint-check
+
+      - name: Run type check
+        run: |
+          echo "🧠 Running type check..."
+          make type-check

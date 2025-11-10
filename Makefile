@@ -79,19 +79,23 @@ test-down:
 	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) down -v
 
+# ======================================================
+# CODE QUALITY COMMANDS
+# ======================================================
+
 .PHONY: lint-check
 lint-check:
 	@echo "🔍 Running Ruff lint check..."
 	ruff check
 
-.PHONY: lint-fix-format
-lint-fix-format:
-	ruff check --fix && ruff format
-
 .PHONY: type-check
 type-check:
 	@echo "🧠 Running Mypy type checks..."
-	mypy --config-file pyproject.toml app/
+	mypy --config-file pyproject.toml
+
+.PHONY: lint-fix-format
+lint-fix-format:
+	ruff check --fix && ruff format
 
 # ======================================================
 # PROD COMMANDS
@@ -110,12 +114,18 @@ prod-down:
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) down
 
 # ======================================================
-# REQUIREMENTS COMMANDS
+# REQUIREMENTS & INITIALIZATION COMMANDS
 # ======================================================
+
+.PHONY: setup
+setup:
+	@echo "🚀 Installing pre-commit hooks..."
+	pre-commit install
+
 .PHONY: freeze
 pip-freeze:
 	@echo "❄️  Freezing current dependencies to requirements/base.txt..."
-	@pip freeze > requirements/base.txt
+	pip freeze > requirements/base.txt
 	@echo "✅ Dependencies exported successfully!"
 
 .PHONY: pip-uninstall
@@ -125,32 +135,15 @@ pip-uninstall:
 
 .PHONY: pip-install-dev
 pip-install-dev:
-	@echo "🧹 Uninstall all libraries..."
+	@echo "✅ Install all libraries..."
 	pip install -r requirements/dev.txt
 
 .PHONY: pip-install-test
-pip-install-test:
-	@echo "🧹 Uninstall all libraries..."
+pip-install-test: 
+	@echo "✅ Install all libraries..."
 	pip install -r requirements/test.txt
 
 .PHONY: pip-install-prod
 pip-install-prod:
-	@echo "🧹 Uninstall all libraries..."
+	@echo "✅ Install all libraries..."
 	pip install -r requirements/prod.txt
-
-# ======================================================
-# CI WORKFLOW COMMANDS
-# ======================================================
-
-.PHONY: ci-lint-check
-ci-lint:
-	@echo "🔍 Running Ruff lint check in Docker..."
-	@env $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | xargs) \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) run --rm backend ruff check
-
-.PHONY: ci-type-check
-ci-type-check:
-	@echo "🧠 Running Mypy type checks in Docker..."
-	@env $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | xargs) \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) run --rm backend mypy --config-file pyproject.toml
-

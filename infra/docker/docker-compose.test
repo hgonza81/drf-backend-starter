@@ -1,4 +1,4 @@
 services:
   backend:
     container_name: backend_test
-    command: pytest
+    command: pytest --cov-report=xml --cov-report=term-missing

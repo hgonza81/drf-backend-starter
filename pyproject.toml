@@ -11,6 +11,7 @@ python_files = ["tests.py", "test_*.py", "*_tests.py"]
 # Default pytest options
 addopts = [
     "--reuse-db",
+    "--cov=app",
     "-v"
 ]
 

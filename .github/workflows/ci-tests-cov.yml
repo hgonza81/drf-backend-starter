@@ -1,0 +1,31 @@
+name: Tests & Coverage
+
+on:
+  workflow_run:
+    workflows: ["Code Quality Check"]
+    types:
+      - completed
+
+jobs:
+  run-tests:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run tests with coverage
+        run: |
+          echo "🧩 Running pytest inside container..."
+          make test
+
+      - name: Upload coverage as artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml

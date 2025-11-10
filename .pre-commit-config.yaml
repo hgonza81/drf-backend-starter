@@ -1,29 +1,30 @@
-# Use: pre-commit install - pre-commit run --all-files
+# To UPDATE and TEST use: pre-commit install && pre-commit run --all-files
 repos:
   # --------------------------------------------------
-  # 🧹 Ruff - Linter & Formatter
+  # Ruff - Linter & Formatter
   # --------------------------------------------------
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.4  # versión actual de Ruff
+    rev: v0.6.4
     hooks:
       - id: ruff
         name: Ruff (linter)
-        args: ["--fix"]     # Corrige automáticamente errores simples
-      - id: ruff-format     # Formatea el código con Ruff
-        name: Ruff (code formater)
+        args: ["--fix"]     # Automatically fix simple linting issues
+      - id: ruff-format
+        name: Ruff (formatter)
 
   # --------------------------------------------------
-  # 🧠 Mypy - Type Checker
+  # Mypy - Type Checker (with Django plugin)
   # --------------------------------------------------
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2  # versión estable y reciente de Mypy
+    rev: v1.11.2
     hooks:
       - id: mypy
         name: Mypy (type checker)
         types: [python]
-        args:
-          [
-            "--config-file=/dev/null",
-            "--python-version=3.12",
-            "--ignore-missing-imports",
-          ]
+        additional_dependencies:
+          - djangorestframework==3.16.1
+          - django-stubs==5.2.7
+          - django-stubs-ext==5.2.7
+          - djangorestframework-stubs==3.16.5
+          - types-requests
+          - types-PyYAML

@@ -1,6 +1,6 @@
 # Django REST Framework Project
 
-A Django REST Framework application with Docker support and multi-environment configuration.
+A Django REST Framework backend application with Docker support and multi-environment configuration.
 
 ## 🚀 Quick Start
 
@@ -27,7 +27,7 @@ A Django REST Framework application with Docker support and multi-environment co
 1. **Install dependencies**
 
    ```bash
-   pip install -r requirements/dev.txt
+   make pip-install-dev
    ```
 1. **Run migrations**
 
