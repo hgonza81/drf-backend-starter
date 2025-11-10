@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run tests in Docker
+        run: make test
+
+      - name: Send email on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.SENDER_EMAIL_USERNAME }}
+          password: ${{ secrets.SENDER_EMAIL_PASSWORD }}
+          subject: "❌ CI Failed: ${{ github.repository }}"
+          to: ${{ secrets.WORKFLOW_ERROR_EMAIL_TO }}
+          from: GitHub Actions <${{ secrets.SENDER_EMAIL_USERNAME }}>
+          body: |
+            Tests failed in ${{ github.repository }}
+
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+
+            View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
