@@ -1,8 +1,6 @@
 -r base.txt
 
-pytest==9.0.0             # Testing framework
-pytest-django==4.11.1     # Django plugin for pytest (provides --reuse-db and other Django features)
-iniconfig==2.3.0          # Dependency used by pytest
-pluggy==1.6.0             # Plugin management system used by pytest
-packaging==25.0           # Version and dependency parsing library used by pytest
-Pygments==2.19.2          # Syntax highlighting library, sometimes used for docs or reports
+pytest==9.0.0
+pytest-django==4.11.1
+iniconfig==2.3.0
+pluggy==1.6.0

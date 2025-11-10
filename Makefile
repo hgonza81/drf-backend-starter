@@ -82,7 +82,7 @@ test-down:
 .PHONY: lint
 lint-check:
 	@echo "🔍 Running Ruff lint check..."
-	ruff check --fix && ruff format
+	ruff check
 
 PHONY: lint-fix-format
 lint-fix-format:
@@ -108,3 +108,12 @@ prod-down:
 	@echo "🧹 Stopping production containers..."
 	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_PROD) | grep . | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) down
+
+# ======================================================
+# REQUIREMENTS COMMANDS
+# ======================================================
+.PHONY: freeze
+freeze:
+	@echo "❄️  Freezing current dependencies to requirements/base.txt..."
+	@pip freeze > requirements/base.txt
+	@echo "✅ Dependencies exported successfully!"
