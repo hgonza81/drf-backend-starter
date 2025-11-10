@@ -113,7 +113,27 @@ prod-down:
 # REQUIREMENTS COMMANDS
 # ======================================================
 .PHONY: freeze
-freeze:
+pip-freeze:
 	@echo "❄️  Freezing current dependencies to requirements/base.txt..."
 	@pip freeze > requirements/base.txt
 	@echo "✅ Dependencies exported successfully!"
+
+.PHONY: pip-uninstall
+pip-uninstall:
+	@echo "🧹 Uninstall all libraries..."
+	pip freeze | xargs pip uninstall -y
+
+.PHONY: pip-install-dev
+pip-install-dev:
+	@echo "🧹 Uninstall all libraries..."
+	pip install -r requirements/dev.txt
+
+.PHONY: pip-install-test
+pip-install-test:
+	@echo "🧹 Uninstall all libraries..."
+	pip install -r requirements/test.txt
+
+.PHONY: pip-install-prod
+pip-install-prod:
+	@echo "🧹 Uninstall all libraries..."
+	pip install -r requirements/prod.txt
