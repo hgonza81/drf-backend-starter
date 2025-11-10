@@ -79,6 +79,20 @@ test-down:
 	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) down -v
 
+.PHONY: lint
+lint-check:
+	@echo "🔍 Running Ruff lint check..."
+	ruff check --fix && ruff format
+
+PHONY: lint-fix-format
+lint-fix-format:
+	ruff check --fix && ruff format
+
+.PHONY: type-check
+type-check:
+	@echo "🧠 Running Mypy type checks..."
+	mypy --config-file pyproject.toml
+
 # ======================================================
 # PROD COMMANDS
 # ======================================================

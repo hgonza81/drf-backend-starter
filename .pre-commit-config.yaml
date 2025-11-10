@@ -1,0 +1,29 @@
+# Use: pre-commit install - pre-commit run --all-files
+repos:
+  # --------------------------------------------------
+  # 🧹 Ruff - Linter & Formatter
+  # --------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.4  # versión actual de Ruff
+    hooks:
+      - id: ruff
+        name: Ruff (linter)
+        args: ["--fix"]     # Corrige automáticamente errores simples
+      - id: ruff-format     # Formatea el código con Ruff
+        name: Ruff (code formater)
+
+  # --------------------------------------------------
+  # 🧠 Mypy - Type Checker
+  # --------------------------------------------------
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2  # versión estable y reciente de Mypy
+    hooks:
+      - id: mypy
+        name: Mypy (type checker)
+        types: [python]
+        args:
+          [
+            "--config-file=/dev/null",
+            "--python-version=3.12",
+            "--ignore-missing-imports",
+          ]

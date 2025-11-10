@@ -13,14 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Create test environment files
-        run: |
-          mkdir -p envs
-          echo "DJANGO_SETTINGS_MODULE=app.core.settings.test" > envs/.env.base
-          echo "TARGET=test" > envs/.env.test
-          echo "APP_PORT=8000" >> envs/.env.test
+      - name: Run Linter in Docker Container
+        run: make lint-check
 
-      - name: Run tests in Docker
+      - name: Run Type Check in Docker Container
+        run: make type-check
+
+      - name: Run Tests in Docker Container
         run: make test
 
 
