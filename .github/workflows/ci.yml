@@ -12,26 +12,34 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Create test environment files
+        run: |
+          mkdir -p envs
+          echo "DJANGO_SETTINGS_MODULE=app.core.settings.test" > envs/.env.base
+          echo "TARGET=test" > envs/.env.test
+          echo "APP_PORT=8000" >> envs/.env.test
 
       - name: Run tests in Docker
         run: make test
-
+      
       - name: Send email on failure
         if: failure()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 465
-          username: ${{ secrets.SENDER_EMAIL_USERNAME }}
-          password: ${{ secrets.SENDER_EMAIL_PASSWORD }}
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "❌ CI Failed: ${{ github.repository }}"
-          to: ${{ secrets.WORKFLOW_ERROR_EMAIL_TO }}
-          from: GitHub Actions <${{ secrets.SENDER_EMAIL_USERNAME }}>
+          to: ${{ secrets.EMAIL_TO }}
+          from: GitHub Actions
           body: |
             Tests failed in ${{ github.repository }}
-
+            
             Branch: ${{ github.ref_name }}
             Commit: ${{ github.sha }}
             Author: ${{ github.actor }}
-
+            
             View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+

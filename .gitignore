@@ -34,22 +34,6 @@ db.sqlite3-journal
 # !**/migrations/__init__.py
 
 # ======================================================
-# Environment Variables
-# ======================================================
-.env.local
-.env.*.local
-
-# Keep example env files and docker-compose env
-!.env
-!.env.example
-!envs/.env.example
-
-# But ignore sensitive env files in envs/
-envs/.env.dev
-envs/.env.test
-envs/.env.prod
-
-# ======================================================
 # IDE / Editor
 # ======================================================
 .vscode/
