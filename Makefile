@@ -19,8 +19,56 @@ COMPOSE_TEST=$(DOCKER_DIR)/docker-compose.test
 COMPOSE_PROD=$(DOCKER_DIR)/docker-compose.prod
 
 # ======================================================
-# DJANGO MANAGEMENT COMMANDS
+# HELP
 # ======================================================
+
+.PHONY: help
+help:
+	@echo "📋 Available commands:"
+	@echo ""
+	@echo "🔧 Django Management:"
+	@echo "  make makemigrations    - Create new database migrations"
+	@echo "  make migrate           - Apply database migrations"
+	@echo "  make createsuperuser   - Create Django superuser"
+	@echo ""
+	@echo "🚀 Development:"
+	@echo "  make dev               - Start development server"
+	@echo "  make dev-down          - Stop development server"
+	@echo "  make dev-rebuild       - Rebuild development containers"
+	@echo "  make dev-seed          - Seed database with test data"
+	@echo ""
+	@echo "🧪 Testing:"
+	@echo "  make test              - Run tests in Docker"
+	@echo "  make test-down         - Stop test containers"
+	@echo ""
+	@echo "✅ Code Quality:"
+	@echo "  make lint              - Run Ruff linter & formatter (auto-fix)"
+	@echo "  make lint-check        - Run Ruff lint check (no fixes)"
+	@echo "  make type-check        - Run Mypy type checks"
+	@echo "  make detect-secrets    - Detect secrets in codebase"
+	@echo "  make security-check    - Run Bandit security scan & pip-audit"
+	@echo "  make configs-check     - Validate configuration files"
+	@echo "  make quality-checks    - Run all quality checks (summary)"
+	@echo ""
+	@echo "🐳 CI Commands:"
+	@echo "  make ci-lint           - Run lint in Docker (for CI)"
+	@echo "  make ci-type-check     - Run type check in Docker (for CI)"
+	@echo ""
+	@echo "📦 Dependencies:"
+	@echo "  make setup             - Install pre-commit hooks"
+	@echo "  make pip-freeze        - Freeze dependencies to requirements/base.txt"
+	@echo "  make pip-uninstall     - Uninstall all libraries"
+	@echo "  make pip-install-dev   - Install dev dependencies"
+	@echo "  make pip-install-test  - Install test dependencies"
+	@echo "  make pip-install-prod  - Install prod dependencies"
+	@echo ""
+	@echo "🚢 Production:"
+	@echo "  make prod              - Start production server"
+	@echo "  make prod-down         - Stop production server"
+
+# ======================================================
+# DJANGO MANAGEMENT COMMANDS
+# ============
 
 .PHONY: makemigrations, 
 makemigrations:
@@ -160,7 +208,7 @@ prod-down:
 # ======================================================
 
 .PHONY: setup
-setup:
+setup: pip-install-dev
 	@echo "🚀 Installing pre-commit hooks..."
 	pre-commit install --hook-type pre-commit --hook-type pre-push
 

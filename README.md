@@ -1,85 +1,273 @@
 # Django REST Framework Project
 
-A Django REST Framework backend application with Docker support and multi-environment configuration.
+Django project with Django REST Framework, configured with Docker, pre-commit hooks, and complete CI/CD.
 
-## 🚀 Quick Start
+## 📋 Table of Contents
 
-### Prerequisites
+- [Prerequisites](#prerequisites)
+- [Quick Installation](#quick-installation)
+- [Environment Configuration](#environment-configuration)
+- [Development](#development)
+- [Testing](#testing)
+- [Code Quality](#code-quality)
+- [CI/CD Pipeline](#cicd-pipeline)
 
-- Python 3.12+
-- Docker & Docker Compose (for containerized development)
-- Make (optional, for using Makefile commands)
+---
 
-### Local Development Setup
+## 🚀 Prerequisites
 
-1. **Clone the repository**
+- **Docker** and **Docker Compose**
+- **Python 3.12+** (for local development)
+- **Git**
+- **Make** (optional but recommended)
 
-   ```bash
-   git clone <repository-url>
-   cd <project-name>
-   ```
-1. **Create virtual environment**
+---
 
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
-1. **Install dependencies**
+## ⚡ Quick Installation
 
-   ```bash
-   make pip-install-dev
-   ```
-1. **Run migrations**
+### Just to run the project
 
-   ```bash
-   make migrate
-   ```
-1. **Create superuser**
-
-   ```bash
-   make superuser
-   ```
-1. **Run containerized development server**
-
-   ```bash
-   make dev
-   ```
-
-## 🧪 Running Tests
+If you only want to run the project without contributing code:
 
 ```bash
-# Run tests in Docker
-make test
+# 1. Clone the repository
+git clone <repository-url>
+cd <project-name>
 
-# Clean up test containers
+# 2. Start the development environment
+make dev
+```
+
+The server will be available at `http://localhost:8000`
+
+### To contribute to the project
+
+If you're going to develop and make commits:
+
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd <project-name>make pip-install-dev
+
+# 2. Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate
+
+# 3. Install dev dependencies and setup pre-commit hooks
+make setup
+
+# 4. Start the development environment
+make dev
+```
+
+---
+
+## ⚙️ Environment Configuration
+
+The project uses **three separate environments**: development, testing, and production. Each environment has its own configuration divided into three layers:
+
+### 1. Environment Variables (`envs/`)
+
+```
+envs/
+├── .env.base      # Variables shared by all environments
+├── .env.dev       # Development-specific variables
+├── .env.test      # Testing-specific variables
+└── .env.prod      # Production-specific variables
+```
+
+### 2. Django Settings (`app/core/settings/`)
+
+```
+app/core/settings/
+├── base.py        # Base Django configuration
+├── dev.py         # Development configuration (DEBUG=True)
+├── test.py        # Testing configuration
+└── prod.py        # Production configuration (DEBUG=False)
+```
+
+### 3. Docker Compose (`infra/docker/`)
+
+```
+infra/docker/
+├── Dockerfile
+├── docker-compose.base    # Base Docker configuration
+├── docker-compose.dev     # Development services
+├── docker-compose.test    # Testing services
+└── docker-compose.prod    # Production services
+```
+
+The system automatically loads the correct configuration based on the environment using the pattern:
+
+```bash
+docker compose -f docker-compose.base -f docker-compose.{env}
+```
+
+---
+
+## 💻 Development
+
+### Start the development server
+
+```bash
+make dev
+```
+
+This will start:
+
+- Django server at `http://localhost:8000`
+- Database (if configured)
+- Mounted volumes for hot-reload
+
+### Useful development commands
+
+```bash
+# Stop the server
+make dev-down
+
+# Rebuild containers
+make dev-rebuild
+
+# Create migrations
+make makemigrations
+
+# Apply migrations
+make migrate
+
+# Create superuser
+make createsuperuser
+
+# Seed database with test data
+make dev-seed
+```
+
+### View logs
+
+```bash
+docker compose -f infra/docker/docker-compose.base -f infra/docker/docker-compose.dev logs -f
+```
+
+---
+
+## 🧪 Testing
+
+### Run tests in Docker
+
+```bash
+make test
+```
+
+This command:
+
+1. Builds the test container
+2. Runs pytest with coverage
+3. Generates coverage reports
+
+### Clean test containers
+
+```bash
 make test-down
 ```
 
-## 📝 Configuration
+---
 
-### Environment Variables
+## ✅ Code Quality
 
-Environment variables are stored in `envs/` directory:
+### Pre-commit Hooks
 
-- `envs/.env.base` - Common environment
-- `envs/.env.dev` - Development environment
-- `envs/.env.test` - Testing environment
-- `envs/.env.prod` - Production environment
+The project uses **pre-commit hooks** to validate code before each commit and push.
 
-### Settings Structure
+#### Pre-commit Hooks (run before commit)
 
-Settings are split into multiple files for better organization:
+- **Ruff Linter & Formatter**: Automatically fixes style errors
+- **Detect Secrets**: Detects credentials and secrets in code
+- **YAML/TOML Validation**: Validates configuration files
+- **Check Large Files**: Prevents commits of large files
+- **Check Merge Conflicts**: Detects conflict markers
 
-- `app/core/settings/base.py` - Common settings
-- `app/core/settings/dev.py` - Development settings
-- `app/core/settings/test.py` - Testing settings
-- `app/core/settings/prod.py` - Production settings
+#### Pre-push Hooks (run before push)
 
-### Requirements Structure
+- **Mypy Type Checking**: Verifies static types
+- **Bandit Security Scan**: Scans for security vulnerabilities
+- **Pip-audit**: Checks for vulnerabilities in dependencies
 
-Dependencies are organized by environment:
+### Run validations manually
 
-- `requirements/base.txt` - Core dependencies
-- `requirements/dev.txt` - Development dependencies
-- `requirements/test.txt` - Testing dependencies
-- `requirements/prod.txt` - Production dependencies
+```bash
+# Run all hooks
+pre-commit run --all-files
+
+# Run specific validation
+make lint              # Linter with auto-fix
+make lint-check        # Linter without auto-fix
+make type-check        # Type checking
+make detect-secrets    # Detect secrets
+make security-check    # Security scan
+
+# Run all validations (summary)
+make quality-checks
+```
+
+### View all available commands
+
+```bash
+make help
+```
+
+---
+
+## 🔄 CI/CD Pipeline
+
+The project has **three GitHub Actions workflows** that run automatically:
+
+### 1. **Code Quality** (`.github/workflows/ci-code-quality.yml`)
+
+Runs on every push and pull request.
+
+**Validations:**
+
+- ✅ Ruff linting
+- ✅ Mypy type checking
+- ✅ Pre-commit hooks checks
+- ✅ Detect secrets
+- ✅ Bandit security scan
+
+### 2. **Tests** (`.github/workflows/ci-tests.yml`)
+
+Runs on every push and pull request.
+
+**Actions:**
+
+- 🧪 Runs tests in Docker
+- 📊 Generates coverage report
+- ✅ Validates that all tests pass
+
+### 3. **SonarCloud** (`.github/workflows/ci-sonarcloud.yml`)
+
+Runs after tests.
+
+**Analysis:**
+
+- 📈 Code quality analysis
+- 🐛 Code smell detection
+- 🔒 Vulnerability analysis
+- 📊 Coverage metrics
+
+### Complete flow
+
+```
+1. Developer makes commit
+   ↓
+2. Pre-commit hooks validate code locally
+   ↓
+3. Developer pushes
+   ↓
+4. Pre-push hooks run heavy validations
+   ↓
+5. GitHub Actions runs:
+   - Code Quality workflow
+   - Tests workflow
+   - SonarCloud workflow (if tests pass)
+   ↓
+6. If everything passes ✅ → code ready to merge
+```
