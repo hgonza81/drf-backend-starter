@@ -1,0 +1,4 @@
+services:
+  backend:
+    container_name: backend_test
+    command: pytest

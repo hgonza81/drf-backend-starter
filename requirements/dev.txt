@@ -1,0 +1,7 @@
+-r base.txt
+
+pytest==9.0.0             # Testing framework
+iniconfig==2.3.0          # Dependency used by pytest
+pluggy==1.6.0             # Plugin management system used by pytest
+packaging==25.0           # Version and dependency parsing library used by pytest
+Pygments==2.19.2          # Syntax highlighting library, sometimes used for docs or reports

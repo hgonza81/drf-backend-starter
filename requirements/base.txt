@@ -1,0 +1,4 @@
+asgiref==3.10.0              # Required by Django for async features (ASGI support)
+Django==5.2.8                # Core Django framework
+djangorestframework==3.16.1  # REST API framework built on top of Django
+sqlparse==0.5.3              # SQL parsing utility used internally by Django

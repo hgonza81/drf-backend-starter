@@ -1,0 +1,30 @@
+# ==========================================================
+# PYTEST CONFIGURATION
+# ==========================================================
+[tool.pytest.ini_options]
+# Django settings module used for testing
+DJANGO_SETTINGS_MODULE = "app.core.settings.test"
+
+# Patterns for test file discovery
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+
+# Default pytest options
+addopts = [
+    "--reuse-db",
+    "-v"
+]
+
+# Warnings configuration
+filterwarnings = [
+    # Ignore Deprecation warnings from Django and third-party libs
+    "ignore::DeprecationWarning:django.*",
+    "ignore::PendingDeprecationWarning:django.*",
+    "ignore::DeprecationWarning:rest_framework.*",
+    "ignore::PendingDeprecationWarning:rest_framework.*",
+
+    # Show (default) warnings from your own apps
+    "default::DeprecationWarning:core.*",
+    "default::PendingDeprecationWarning:core.*",
+    "default::DeprecationWarning:accounts.*",
+    "default::PendingDeprecationWarning:accounts.*"
+]
