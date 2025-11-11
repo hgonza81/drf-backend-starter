@@ -10,6 +10,10 @@ from supabase import create_client, Client
 
 from app.core.authentication import SupabaseJWTAuthentication
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 # Simple DRF view to test authentication manually
 class ProtectedView(APIView):

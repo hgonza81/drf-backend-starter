@@ -70,20 +70,23 @@ help:
 # DJANGO MANAGEMENT COMMANDS
 # ============
 
-.PHONY: makemigrations, 
+.PHONY: makemigrations
 makemigrations:
 	@echo "📦 Making new migrations..."
-	python manage.py makemigrations
+	@bash -c 'export $$(grep -hv "^\#" $(ENV_BASE) $(ENV_DEV) | grep . | sed "s/ *\#.*//" | xargs) && \
+	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) run --rm backend python manage.py makemigrations'
 
 .PHONY: migrate
 migrate:
 	@echo "⚙️ Applying database migrations..."
-	python manage.py migrate
+	@bash -c 'export $$(grep -hv "^\#" $(ENV_BASE) $(ENV_DEV) | grep . | sed "s/ *\#.*//" | xargs) && \
+	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) run --rm backend python manage.py migrate'
 
 .PHONY: createsuperuser
 createsuperuser:
 	@echo "👤 Creating Django superuser..."
-	python manage.py createsuperuser
+	@bash -c 'export $$(grep -hv "^\#" $(ENV_BASE) $(ENV_DEV) | grep . | sed "s/ *\#.*//" | xargs) && \
+	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) run --rm backend python manage.py createsuperuser'
 
 # ======================================================
 # DEVELOPMENT COMMANDS
@@ -108,8 +111,10 @@ dev-rebuild:
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) up --build --force-recreate -d
 
 .PHONY: dev-seed
-dev-seed: dev
-	docker exec backend_dev python manage.py seed_database
+dev-seed:
+	@echo "🌱 Seeding database with test data..."
+	@bash -c 'export $$(grep -hv "^\#" $(ENV_BASE) $(ENV_DEV) | grep . | sed "s/ *\#.*//" | xargs) && \
+	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) run --rm backend python manage.py seed_database'
 
 # ======================================================
 # TEST COMMANDS

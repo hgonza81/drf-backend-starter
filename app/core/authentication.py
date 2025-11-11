@@ -104,20 +104,3 @@ class SupabaseJWTAuthentication(authentication.BaseAuthentication):
         )
 
         return (user, None)
-
-    def get_or_create_user(self, user_id, email):
-        """
-        Helper method to map or create a Django user instance
-        corresponding to the Supabase-authenticated user.
-
-        You can adapt this to your own user model logic.
-        """
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
-
-        user, _ = User.objects.get_or_create(
-            username=f"supabase_{user_id}",
-            defaults={"email": email or ""},
-        )
-        return user
