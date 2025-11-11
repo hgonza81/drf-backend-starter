@@ -1,7 +1,13 @@
 services:
   backend:
     container_name: backend_test
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: test
     env_file:
       - ../../envs/.env.base
       - ../../envs/.env.test
+    environment:
+      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY}
     command: pytest --cov-report=xml --cov-report=term-missing

@@ -1,4 +1,11 @@
 services:
   backend:
     container_name: backend_dev
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: dev
+    env_file:
+      - ../../envs/.env.base
+      - ../../envs/.env.dev
     command: python manage.py runserver 0.0.0.0:${APP_PORT}

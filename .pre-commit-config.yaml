@@ -2,77 +2,77 @@
 # PRE-COMMIT CONFIGURATION
 # ==================================================
 # SETUP:
-#   pre-commit install --hook-type pre-commit --hook-type pre-push
+#   pre-commit install --hook-type pre-commit
 # TEST ALL:
 #   pre-commit run --all-files
 # UPDATE:
 #   pre-commit autoupdate && pre-commit run --all-files
 
-default_install_hook_types: [pre-commit, pre-push]
-default_stages: [pre-commit, pre-push]
+default_install_hook_types: [pre-commit]
+default_stages: [pre-commit]
 
 # ==================================================
 # PRE-COMMIT HOOKS (fast checks)
 # ==================================================
 repos:
-  - repo: local
+  # --------------------------------------------------
+  # Ruff linter and formatter
+  # --------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.4
     hooks:
-      # --------------------------------------------------
-      # Ruff + format (lint auto-fix)
-      # --------------------------------------------------
-      - id: lint
-        name: Lint (Ruff auto-fix)
-        entry: bash -c 'source .venv/bin/activate && make lint'
-        language: system
-        pass_filenames: false
-        stages: [pre-commit]
+      - id: ruff
+        name: Ruff linter (auto-fix)
+        args: [--fix]
+      - id: ruff-format
+        name: Ruff formatter
 
+  # --------------------------------------------------
+  # Mypy type checks
+  # --------------------------------------------------
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.18.2
+    hooks:
+      - id: mypy
+        name: Type checking (Mypy)
+        args: [--config-file=pyproject.toml]
+        additional_dependencies:
+          - django-stubs
+          - djangorestframework-stubs
+          - types-requests
+          - django
+          - djangorestframework
+          - supabase
+          - PyJWT
+
+  # --------------------------------------------------
+  # Pre-commit hooks (yaml, large files, merge conflicts)
+  # --------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: check-yaml
-        stages: [pre-commit]
       - id: check-toml
-        stages: [pre-commit]
       - id: check-added-large-files
-        stages: [pre-commit]
       - id: check-merge-conflict
-        stages: [pre-commit]
 
-  - repo: local
+  # --------------------------------------------------
+  # Detect secrets
+  # --------------------------------------------------
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
     hooks:
-      # --------------------------------------------------
-      # Detect secrets
-      # --------------------------------------------------
       - id: detect-secrets
         name: Detect secrets
-        entry: bash -c 'source .venv/bin/activate && make detect-secrets'
-        language: system
-        pass_filenames: false
-        stages: [pre-commit]
 
-# ==================================================
-# PRE-PUSH HOOKS (heavier checks)
-# ==================================================
-  - repo: local
+  # --------------------------------------------------
+  # Bandit security checks
+  # --------------------------------------------------
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.6
     hooks:
-      # --------------------------------------------------
-      # Mypy type checks
-      # --------------------------------------------------
-      - id: type-check
-        name: Type checking
-        entry: bash -c 'source .venv/bin/activate && make type-check'
-        language: system
-        pass_filenames: false
-        stages: [pre-push]
-
-      # --------------------------------------------------
-      # Security checks (Bandit + Pip-audit)
-      # --------------------------------------------------
-      - id: security-check
-        name: Security checks
-        entry: bash -c 'source .venv/bin/activate && make security-check'
-        language: system
-        pass_filenames: false
-        stages: [pre-push]
+      - id: bandit
+        name: Security scan (Bandit)
+        args: [-c, pyproject.toml]
+        additional_dependencies: ["bandit[toml]"]
 

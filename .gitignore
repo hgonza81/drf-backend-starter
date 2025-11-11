@@ -99,7 +99,6 @@ credentials/
 # ======================================================
 # Environment Files (with secrets)
 # ======================================================
-envs/.env.base
 envs/.env.dev
 envs/.env.test
 envs/.env.prod

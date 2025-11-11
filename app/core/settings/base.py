@@ -12,11 +12,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
-from .env import (
+from .load_env import (
+    SUPABASE_ES256_PUBLIC_JWK,
     SUPABASE_PROJECT_URL,
     SUPABASE_PUBLIC_KEY,
     SUPABASE_SECRET_KEY,
-    SUPABASE_ES256_PUBLIC_JWK,
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -132,7 +132,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Authentication
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "app.core.authentication.SupabaseJWTAuthentication",
+        "app.core.auth.SupabaseJWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
 }

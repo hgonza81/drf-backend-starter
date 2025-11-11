@@ -1,13 +1,6 @@
 services:
   backend:
-    build:
-      context: ../..
-      dockerfile: infra/docker/Dockerfile
-      target: ${TARGET}
     ports:
-      - "${APP_PORT}:${APP_PORT}"
+      - "8000:8000"
     volumes:
       - ../..:/app
-    env_file:
-      - ../../envs/.env.base
-      - ../../envs/.env.${TARGET}

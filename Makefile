@@ -3,20 +3,13 @@
 # ======================================================
 
 # Root paths
-DOCKER_DIR=infra/docker
-ENVS_DIR=envs
-
-# Environment files
-ENV_BASE=$(ENVS_DIR)/.env.base
-ENV_DEV=$(ENVS_DIR)/.env.dev
-ENV_TEST=$(ENVS_DIR)/.env.test
-ENV_PROD=$(ENVS_DIR)/.env.prod
+DOCKER_DIR = infra/docker
 
 # Compose files
-COMPOSE_BASE=$(DOCKER_DIR)/docker-compose.base
-COMPOSE_DEV=$(DOCKER_DIR)/docker-compose.dev
-COMPOSE_TEST=$(DOCKER_DIR)/docker-compose.test
-COMPOSE_PROD=$(DOCKER_DIR)/docker-compose.prod
+COMPOSE_FILES_BASE = -f $(DOCKER_DIR)/docker-compose.base
+COMPOSE_FILES_DEV = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.dev
+COMPOSE_FILES_TEST = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.test
+COMPOSE_FILES_PROD = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.prod
 
 # ======================================================
 # HELP
@@ -73,20 +66,17 @@ help:
 .PHONY: makemigrations
 makemigrations:
 	@echo "📦 Making new migrations..."
-	@bash -c 'export $$(grep -hv "^\#" $(ENV_BASE) $(ENV_DEV) | grep . | sed "s/ *\#.*//" | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) run --rm backend python manage.py makemigrations'
+	docker compose $(COMPOSE_FILES_DEV) run --rm backend python manage.py makemigrations
 
 .PHONY: migrate
 migrate:
 	@echo "⚙️ Applying database migrations..."
-	@bash -c 'export $$(grep -hv "^\#" $(ENV_BASE) $(ENV_DEV) | grep . | sed "s/ *\#.*//" | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) run --rm backend python manage.py migrate'
+	docker compose $(COMPOSE_FILES_DEV) run --rm backend python manage.py migrate
 
 .PHONY: createsuperuser
 createsuperuser:
 	@echo "👤 Creating Django superuser..."
-	@bash -c 'export $$(grep -hv "^\#" $(ENV_BASE) $(ENV_DEV) | grep . | sed "s/ *\#.*//" | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) run --rm backend python manage.py createsuperuser'
+	docker compose $(COMPOSE_FILES_DEV) run --rm backend python manage.py createsuperuser
 
 # ======================================================
 # DEVELOPMENT COMMANDS
@@ -95,26 +85,22 @@ createsuperuser:
 .PHONY: dev
 dev:
 	@echo "🚀 Starting Django (development mode)..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_DEV) | grep . | sed 's/ *#.*//' | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) up --build -d
+	docker compose $(COMPOSE_FILES_DEV) up --build -d
 
 .PHONY: dev-down
 dev-down:
 	@echo "🧹 Deleting dev container, networks, and volumes..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_DEV) | grep . | sed 's/ *#.*//' | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) down
+	docker compose $(COMPOSE_FILES_DEV) down
 
 .PHONY: dev-rebuild
 dev-rebuild:
 	@echo "♻️  Rebuilding development image..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_DEV) | grep . | sed 's/ *#.*//' | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) up --build --force-recreate -d
+	docker compose $(COMPOSE_FILES_DEV) up --build --force-recreate -d
 
 .PHONY: dev-seed
 dev-seed:
 	@echo "🌱 Seeding database with test data..."
-	@bash -c 'export $$(grep -hv "^\#" $(ENV_BASE) $(ENV_DEV) | grep . | sed "s/ *\#.*//" | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) run --rm backend python manage.py seed_database'
+	docker compose $(COMPOSE_FILES_DEV) run --rm backend python manage.py seed_database
 
 # ======================================================
 # TEST COMMANDS
@@ -123,14 +109,26 @@ dev-seed:
 .PHONY: test
 test:
 	@echo "🧪 Running tests..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | sed 's/ *#.*//' | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) up --build --abort-on-container-exit
+	docker compose $(COMPOSE_FILES_TEST) up --build --abort-on-container-exit
 
 .PHONY: test-down
 test-down:
 	@echo "🧹 Deleting test container, networks, and volumes..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | sed 's/ *#.*//' | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) down -v
+	docker compose $(COMPOSE_FILES_TEST) down -v
+
+# ======================================================
+# PRODUCTION COMMANDS
+# ======================================================
+
+.PHONY: prod
+prod:
+	@echo "🚀 Starting production server (Gunicorn)..."
+	docker compose $(COMPOSE_FILES_PROD) up --build -d
+
+.PHONY: prod-down
+prod-down:
+	@echo "🧹 Stopping production containers..."
+	docker compose $(COMPOSE_FILES_PROD) down
 
 # ======================================================
 # CODE QUALITY & VALIDATION COMMANDS
@@ -193,29 +191,13 @@ quality-checks:
 	@echo "✅ All quality checks completed"
 
 # ======================================================
-# PRODUCTION COMMANDS
-# ======================================================
-
-.PHONY: prod
-prod:
-	@echo "🚀 Starting production server (Gunicorn)..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_PROD) | grep . | sed 's/ *#.*//' | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) up --build -d
-
-.PHONY: prod-down
-prod-down:
-	@echo "🧹 Stopping production containers..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_PROD) | grep . | sed 's/ *#.*//' | xargs) && \
-	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) down
-
-# ======================================================
 # REQUIREMENTS & INITIALIZATION COMMANDS
 # ======================================================
 
 .PHONY: setup
 setup: pip-install-dev
 	@echo "🚀 Installing pre-commit hooks..."
-	pre-commit install --hook-type pre-commit --hook-type pre-push
+	pre-commit install --hook-type pre-commit
 
 .PHONY: freeze
 pip-freeze:

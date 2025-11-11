@@ -1,16 +1,16 @@
-import pytest
+import logging
+
 import jwt
+import pytest
 from django.conf import settings
-from rest_framework.test import APIRequestFactory
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from supabase import create_client, Client
+from rest_framework.response import Response
+from rest_framework.test import APIRequestFactory
+from rest_framework.views import APIView
+from supabase import Client, create_client
 
-from app.core.authentication import SupabaseJWTAuthentication
-
-import logging
+from app.core.auth import SupabaseJWTAuthentication
 
 logger = logging.getLogger(__name__)
 

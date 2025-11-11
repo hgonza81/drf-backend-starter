@@ -11,8 +11,10 @@ python_files = ["tests.py", "test_*.py", "*_tests.py"]
 # Default pytest options
 addopts = [
     "--reuse-db",
+    "-v",
     "--cov=app",
-    "-v"
+    "--cov-report=term-missing",
+    "--cov-report=xml",
 ]
 
 # Warnings configuration

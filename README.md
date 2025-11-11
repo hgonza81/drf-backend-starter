@@ -271,3 +271,25 @@ Runs after tests.
    ↓
 6. If everything passes ✅ → code ready to merge
 ```
+
+
+# 🧱 Environment and Configuration Structure
+
+| File / Directory              | Description                                                     |
+| ----------------------------- | --------------------------------------------------------------- |
+| **envs/.env.base**            | Common non-sensitive config (no secrets).                       |
+| **envs/.env.dev**             | Local development (MIGH HAVE SECRETS) ----------> (GITIGNORE)   |
+| **envs/.env.dev.example**     | Local development example (no secrets).                         |
+| **envs/.env.test**            | Local make test (MIGH HAVE SECRETS) ------------> (GITIGNORE)   |
+| **envs/.env.test.example**    | CI template (copy of .env.test with no secrets).                |
+| **envs/.env.ci**              | Generated in CI, injected from GitHub Actions secrets           |
+| **envs/.env.prod**            | Production (MIGH HAVE SECRETS) -----------------> (GITIGNORE)   |
+| **envs/.env.prod.template**   | Production template (no secrets).                               |
+| **app/core/settings/base.py** | Base settings (no secrets).                                     |
+| **app/core/settings/dev.py**  | `DJANGO_SETTINGS_MODULE=app.core.settings.dev`  (no secrets).   |
+| **app/core/settings/test.py** | `DJANGO_SETTINGS_MODULE=app.core.settings.test` (no secrets).   |
+| **app/core/settings/prod.py** | `DJANGO_SETTINGS_MODULE=app.core.settings.prod` (no secrets).   |
+| **docker/compose.base.yml**   | Base compose configuration (shared between environments)        |
+| **docker/compose.dev.yml**    | Local development compose configuration                         |
+| **docker/compose.test.yml**   | Testing/CI compose configuration                                |
+| **docker/compose.prod.yml**   | Production compose configuration                                |
