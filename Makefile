@@ -92,19 +92,19 @@ createsuperuser:
 .PHONY: dev
 dev:
 	@echo "🚀 Starting Django (development mode)..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_DEV) | grep . | xargs) && \
+	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_DEV) | grep . | sed 's/ *#.*//' | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) up --build -d
 
 .PHONY: dev-down
 dev-down:
 	@echo "🧹 Deleting dev container, networks, and volumes..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_DEV) | grep . | xargs) && \
+	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_DEV) | grep . | sed 's/ *#.*//' | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) down
 
 .PHONY: dev-rebuild
 dev-rebuild:
 	@echo "♻️  Rebuilding development image..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_DEV) | grep . | xargs) && \
+	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_DEV) | grep . | sed 's/ *#.*//' | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) up --build --force-recreate -d
 
 .PHONY: dev-seed
@@ -118,13 +118,13 @@ dev-seed: dev
 .PHONY: test
 test:
 	@echo "🧪 Running tests..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | xargs) && \
+	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | sed 's/ *#.*//' | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) up --build --abort-on-container-exit
 
 .PHONY: test-down
 test-down:
 	@echo "🧹 Deleting test container, networks, and volumes..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | xargs) && \
+	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_TEST) | grep . | sed 's/ *#.*//' | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_TEST) down -v
 
 # ======================================================
@@ -194,13 +194,13 @@ quality-checks:
 .PHONY: prod
 prod:
 	@echo "🚀 Starting production server (Gunicorn)..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_PROD) | grep . | xargs) && \
+	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_PROD) | grep . | sed 's/ *#.*//' | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) up --build -d
 
 .PHONY: prod-down
 prod-down:
 	@echo "🧹 Stopping production containers..."
-	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_PROD) | grep . | xargs) && \
+	@export $$(grep -hv '^#' $(ENV_BASE) $(ENV_PROD) | grep . | sed 's/ *#.*//' | xargs) && \
 	docker compose -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) down
 
 # ======================================================

@@ -18,9 +18,20 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
 
-      - name: Run tests with coverage
+      - name: Create environment files for tests
         env:
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: |
+          # Create .env.base from example
+          cp envs/.env.base.example envs/.env.base
+          
+          # Inject SUPABASE_SECRET_KEY from GitHub secrets into .env.base
+          echo "SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }}" >> envs/.env.base
+          
+          # Create .env.test from example
+          cp envs/.env.test.example envs/.env.test
+
+      - name: Run tests with coverage
         run: |
           echo "🧩 Running pytest inside container..."
           make test
