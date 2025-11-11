@@ -1,3 +1,5 @@
 services:
   backend:
     container_name: backend_prod
+    environment:
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

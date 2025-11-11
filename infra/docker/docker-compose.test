@@ -2,3 +2,7 @@ services:
   backend:
     container_name: backend_test
     command: pytest --cov-report=xml --cov-report=term-missing
+    environment:
+      # This will use the value from .env.test locally
+      # or from the host environment in CI (passed by GitHub Actions)
+      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY}
