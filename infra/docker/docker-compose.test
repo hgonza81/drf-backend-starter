@@ -8,4 +8,4 @@ services:
     env_file:
       - ../../envs/.env.base
       - ../../envs/.env.test
-    command: pytest
+    command: sh -c "python manage.py migrate && pytest"
