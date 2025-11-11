@@ -23,6 +23,10 @@ jobs:
           # Create .env.test if needed
           cp envs/.env.test.example envs/.env.test || true
           echo "✅ Environment files ready"
+      
+      - name: Run Django migrations
+        run: |
+          make migrate
 
       - name: Run tests with coverage
         env:
