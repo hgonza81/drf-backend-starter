@@ -8,6 +8,4 @@ services:
     env_file:
       - ../../envs/.env.base
       - ../../envs/.env.test
-    environment:
-      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY}
-    command: pytest --cov-report=xml --cov-report=term-missing
+    command: pytest

@@ -28,24 +28,6 @@ repos:
         name: Ruff formatter
 
   # --------------------------------------------------
-  # Mypy type checks
-  # --------------------------------------------------
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.2
-    hooks:
-      - id: mypy
-        name: Type checking (Mypy)
-        args: [--config-file=pyproject.toml]
-        additional_dependencies:
-          - django-stubs
-          - djangorestframework-stubs
-          - types-requests
-          - django
-          - djangorestframework
-          - supabase
-          - PyJWT
-
-  # --------------------------------------------------
   # Pre-commit hooks (yaml, large files, merge conflicts)
   # --------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks

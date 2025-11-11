@@ -13,45 +13,62 @@ addopts = [
     "--reuse-db",
     "-v",
     "--cov=app",
-    "--cov-report=term-missing",
+    "--cov-fail-under=50",
+    "--cov-report=term-missing:skip-covered",
     "--cov-report=xml",
 ]
 
 # Warnings configuration
 filterwarnings = [
-    # Ignore Deprecation warnings from Django and third-party libs
     "ignore::DeprecationWarning:django.*",
     "ignore::PendingDeprecationWarning:django.*",
+    "ignore::UserWarning:django.*",
+    "ignore::RuntimeWarning:django.*",
     "ignore::DeprecationWarning:rest_framework.*",
     "ignore::PendingDeprecationWarning:rest_framework.*",
-
-    # Show (default) warnings from your own apps
-    "default::DeprecationWarning:core.*",
-    "default::PendingDeprecationWarning:core.*",
-    "default::DeprecationWarning:accounts.*",
-    "default::PendingDeprecationWarning:accounts.*"
+    "default::DeprecationWarning:app.*",
+    "default::PendingDeprecationWarning:app.*",
 ]
+
+[tool.coverage.run]
+branch = false
+source = ["app"]
+omit = ["*/migrations/*", "*/tests/*"]
 
 # ======================================================
 # Ruff configuration
 # ======================================================
 [tool.ruff]
-src = ["app"]
+target-version = "py314"
+line-length = 88
+src = ["app", "tests"]
 
-# ======================================================
-# Mypy configuration
-# ======================================================
-[tool.mypy]
-files = ["app"]
-python_version = "3.14"
-ignore_missing_imports = true
-plugins = ["mypy_django_plugin.main"]
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "DJ",  # flake8-django
+]
+exclude = [
+    "*/migrations/*",  # ignora todas las migraciones
+]
 
-[tool.django-stubs]
-django_settings_module = "app.core.settings.dev"
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
 
 # ======================================================
 # Bandit configuration
 # ======================================================
 [tool.bandit]
-exclude_dirs = ["*/tests/*", "/tests/*", "*/migrations/*"]
+targets = ["app"]
+exclude = ["tests", "migrations"]

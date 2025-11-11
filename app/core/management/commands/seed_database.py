@@ -34,7 +34,7 @@ class Command(BaseCommand):
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error during seeding: {str(e)}"))
-            raise CommandError(f"Seeding failed: {str(e)}")
+            raise CommandError(f"Seeding failed: {str(e)}") from e
 
     def _validate_arguments(self, options):
         # raise CommandError("Raise an error if the argument is invalid")

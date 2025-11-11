@@ -8,5 +8,3 @@ services:
     env_file:
       - ../../envs/.env.base
       - ../../envs/.env.prod
-    environment:
-      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY}

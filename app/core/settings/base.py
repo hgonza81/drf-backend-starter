@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-xx2k@9((pg9y(@#ynptpj1u9613nmy9x(tso4vnl2-y1+&#f(+"  # pragma: allowlist secret
+SECRET_KEY = "django-insecure-xx2k@9((pg9y(@#ynptpj1u9613nmy9x(tso4vnl2-y1+&#f(+"  # pragma: allowlist secret  # noqa: E501
 
 ALLOWED_HOSTS: list[str] = []
 
@@ -82,7 +82,7 @@ WSGI_APPLICATION = "app.core.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": BASE_DIR.parent.parent / "db.sqlite3",
     }
 }
 
@@ -92,7 +92,7 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # noqa: E501
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",

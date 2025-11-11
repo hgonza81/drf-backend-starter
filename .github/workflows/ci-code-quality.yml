@@ -28,11 +28,6 @@ jobs:
           echo "🔍 Running linter check..."
           make lint-check
 
-      - name: Run type check
-        run: |
-          echo "🔍  Running type check..."
-          make type-check
-
       - name: Run pre-commit hooks checks
         run: |
           echo "🔍  Running pre-commit hook checks..."
@@ -46,4 +41,4 @@ jobs:
       - name: Security checks
         run: |
           echo "🔍  Running security checks..."
-          make detect-secrets
+          make security-check

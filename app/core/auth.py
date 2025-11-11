@@ -1,9 +1,9 @@
 import json
 
+import jwt
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import authentication, exceptions
-import jwt
 
 User = get_user_model()
 
@@ -82,14 +82,14 @@ class SupabaseJWTAuthentication(authentication.BaseAuthentication):
                     f"Unsupported algorithm: {algorithm}"
                 )
 
-        except jwt.ExpiredSignatureError:
-            raise exceptions.AuthenticationFailed("Token has expired")
-        except jwt.InvalidAudienceError:
-            raise exceptions.AuthenticationFailed("Invalid token audience")
-        except jwt.InvalidTokenError:
-            raise exceptions.AuthenticationFailed("Invalid token")
-        except Exception:
-            raise exceptions.AuthenticationFailed("Authentication failed")
+        except jwt.ExpiredSignatureError as exc:
+            raise exceptions.AuthenticationFailed("Token has expired") from exc
+        except jwt.InvalidAudienceError as exc:
+            raise exceptions.AuthenticationFailed("Invalid token audience") from exc
+        except jwt.InvalidTokenError as exc:
+            raise exceptions.AuthenticationFailed("Invalid token") from exc
+        except Exception as exc:
+            raise exceptions.AuthenticationFailed("Authentication failed") from exc
 
         user_id = payload.get("sub")
         user_email = payload.get("email")

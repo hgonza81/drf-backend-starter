@@ -8,4 +8,4 @@ services:
     env_file:
       - ../../envs/.env.base
       - ../../envs/.env.dev
-    command: python manage.py runserver 0.0.0.0:${APP_PORT}
+    command: python manage.py runserver 0.0.0.0:8000

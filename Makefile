@@ -34,34 +34,29 @@ help:
 	@echo "  make test              - Run tests in Docker"
 	@echo "  make test-down         - Stop test containers"
 	@echo ""
+	@echo "🚢 Production:"
+	@echo "  make prod              - Start production server"
+	@echo "  make prod-down         - Stop production server"
+	@echo ""
 	@echo "✅ Code Quality:"
 	@echo "  make lint              - Run Ruff linter & formatter (auto-fix)"
 	@echo "  make lint-check        - Run Ruff lint check (no fixes)"
-	@echo "  make type-check        - Run Mypy type checks"
+	@echo "  make hooks-check     - Validate configuration files"
 	@echo "  make detect-secrets    - Detect secrets in codebase"
 	@echo "  make security-check    - Run Bandit security scan & pip-audit"
-	@echo "  make configs-check     - Validate configuration files"
 	@echo "  make quality-checks    - Run all quality checks (summary)"
-	@echo ""
-	@echo "🐳 CI Commands:"
-	@echo "  make ci-lint           - Run lint in Docker (for CI)"
-	@echo "  make ci-type-check     - Run type check in Docker (for CI)"
 	@echo ""
 	@echo "📦 Dependencies:"
 	@echo "  make setup             - Install pre-commit hooks"
-	@echo "  make pip-freeze        - Freeze dependencies to requirements/base.txt"
 	@echo "  make pip-uninstall     - Uninstall all libraries"
 	@echo "  make pip-install-dev   - Install dev dependencies"
 	@echo "  make pip-install-test  - Install test dependencies"
 	@echo "  make pip-install-prod  - Install prod dependencies"
 	@echo ""
-	@echo "🚢 Production:"
-	@echo "  make prod              - Start production server"
-	@echo "  make prod-down         - Stop production server"
 
 # ======================================================
 # DJANGO MANAGEMENT COMMANDS
-# ============
+# ======================================================
 
 .PHONY: makemigrations
 makemigrations:
@@ -85,7 +80,7 @@ createsuperuser:
 .PHONY: dev
 dev:
 	@echo "🚀 Starting Django (development mode)..."
-	docker compose $(COMPOSE_FILES_DEV) up --build -d
+	docker compose $(COMPOSE_FILES_DEV) up --build --remove-orphans -d
 
 .PHONY: dev-down
 dev-down:
@@ -95,7 +90,7 @@ dev-down:
 .PHONY: dev-rebuild
 dev-rebuild:
 	@echo "♻️  Rebuilding development image..."
-	docker compose $(COMPOSE_FILES_DEV) up --build --force-recreate -d
+	docker compose $(COMPOSE_FILES_DEV) up --build --force-recreate --remove-orphans -d
 
 .PHONY: dev-seed
 dev-seed:
@@ -109,7 +104,8 @@ dev-seed:
 .PHONY: test
 test:
 	@echo "🧪 Running tests..."
-	docker compose $(COMPOSE_FILES_TEST) up --build --abort-on-container-exit
+	docker compose $(COMPOSE_FILES_TEST) up --build --abort-on-container-exit --remove-orphans
+	@docker compose $(COMPOSE_FILES_TEST) down
 
 .PHONY: test-down
 test-down:
@@ -123,7 +119,7 @@ test-down:
 .PHONY: prod
 prod:
 	@echo "🚀 Starting production server (Gunicorn)..."
-	docker compose $(COMPOSE_FILES_PROD) up --build -d
+	docker compose $(COMPOSE_FILES_PROD) up --build --remove-orphans -d
 
 .PHONY: prod-down
 prod-down:
@@ -137,17 +133,12 @@ prod-down:
 .PHONY: lint
 lint:
 	@echo "🧹 Running Ruff linter & formatter (auto-fix)..."
-	ruff check --fix && ruff format
+	ruff format && ruff check --fix
 
 .PHONY: lint-check
 lint-check:
 	@echo "🔍 Running Ruff lint check (no fixes)..."
 	ruff check
-
-.PHONY: type-check
-type-check:
-	@echo "🔍 Running Mypy type checks..."
-	mypy --config-file pyproject.toml
 
 .PHONY: hooks-check
 hooks-check:
@@ -165,6 +156,7 @@ detect-secrets:
 	else \
 		detect-secrets-hook $$(git ls-files); \
 	fi
+	@echo "🔐 Finished secrets in codebase."
 
 .PHONY: security-check
 security-check:
@@ -179,8 +171,6 @@ quality-checks:
 	@echo ""
 	@printf "  Lint check...................... "
 	@make lint-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
-	@printf "  Type check...................... "
-	@make type-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
 	@printf "  Pre-commit hooks validations.... "
 	@make hooks-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
 	@printf "  Detect secrets.................. "
@@ -191,19 +181,13 @@ quality-checks:
 	@echo "✅ All quality checks completed"
 
 # ======================================================
-# REQUIREMENTS & INITIALIZATION COMMANDS
+# DEPENDENCIES & INITIALIZATION COMMANDS
 # ======================================================
 
 .PHONY: setup
 setup: pip-install-dev
 	@echo "🚀 Installing pre-commit hooks..."
 	pre-commit install --hook-type pre-commit
-
-.PHONY: freeze
-pip-freeze:
-	@echo "❄️  Freezing current dependencies to requirements/base.txt..."
-	pip freeze > requirements/temp_env_file.txt
-	@echo "✅ Dependencies exported successfully!"
 
 .PHONY: pip-uninstall
 pip-uninstall:

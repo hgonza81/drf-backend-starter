@@ -33,7 +33,7 @@ FROM base AS dev
 # Install dev-specific requirements (includes base.txt via -r)
 RUN pip install -r requirements/dev.txt
 
-EXPOSE ${APP_PORT}
+EXPOSE 8000
 
 # ==========================================================
 # Test stage
@@ -55,8 +55,8 @@ RUN pip install -r requirements/prod.txt
 RUN useradd -m django294
 USER django294
 
-EXPOSE ${APP_PORT}
+EXPOSE 8000
 
 # Default production command
 # Environment variables loaded from .env.prod
-CMD ["gunicorn", "app.core.wsgi:application", "--bind", "0.0.0.0:${APP_PORT}", "--workers", "4"]
+CMD ["gunicorn", "app.core.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]

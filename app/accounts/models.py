@@ -33,12 +33,12 @@ class UserManager(BaseUserManager["User"]):
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    username = None  # type: ignore[assignment]  # no usaremos username
+    username = None  # We don't use username, we use email instead
     email = models.EmailField(unique=True)
-    full_name = models.CharField(max_length=255, blank=True, null=True)
-    supabase_id = models.UUIDField(blank=True, null=True, unique=True)
+    full_name = models.CharField(max_length=255, blank=True, default="")
+    supabase_id = models.UUIDField(unique=True, blank=True, null=True)
 
-    objects: ClassVar[UserManager] = UserManager()  # type: ignore[assignment]
+    objects: ClassVar[UserManager] = UserManager()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
