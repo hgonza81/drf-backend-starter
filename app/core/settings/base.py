@@ -137,6 +137,8 @@ REST_FRAMEWORK = {
     ],
 }
 
+AUTH_USER_MODEL = "accounts.User"
+
 # Supabase
 SUPABASE = {
     "PROJECT_URL": SUPABASE_PROJECT_URL,

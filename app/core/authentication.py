@@ -1,8 +1,11 @@
 import json
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from rest_framework import authentication, exceptions
 import jwt
+
+User = get_user_model()
 
 
 class SupabaseJWTAuthentication(authentication.BaseAuthentication):
@@ -96,7 +99,10 @@ class SupabaseJWTAuthentication(authentication.BaseAuthentication):
                 "Missing 'sub' claim in token payload"
             )
 
-        user = self.get_or_create_user(user_id, user_email)
+        user, _ = User.objects.get_or_create(
+            supabase_id=user_id, defaults={"email": user_email or ""}
+        )
+
         return (user, None)
 
     def get_or_create_user(self, user_id, email):

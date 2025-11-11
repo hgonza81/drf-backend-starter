@@ -27,8 +27,9 @@ def test_supabase_jwt_auth_success():
     then verifies that the custom authentication class can decode it correctly.
     """
     # Generate a test JWT token using the same secret as Supabase (from settings)
+    # Use a valid UUID for the sub claim
     payload = {
-        "sub": "12345",
+        "sub": "550e8400-e29b-41d4-a716-446655440000",
         "email": "testuser@example.com",
         "aud": "authenticated",  # Must match the 'audience' parameter
     }
@@ -45,7 +46,8 @@ def test_supabase_jwt_auth_success():
 
     assert response.status_code == status.HTTP_200_OK
     assert response.data["message"] == "Authenticated"
-    assert "supabase_12345" in response.data["user"]
+    # The user email should be in the response
+    assert "testuser@example.com" in response.data["user"]
 
 
 def test_supabase_jwt_auth_invalid_token():
@@ -108,5 +110,5 @@ def test_supabase_real_authentication():
 
     assert response.status_code == status.HTTP_200_OK
     assert response.data["message"] == "Authenticated"
-    # The user should be created based on the Supabase user ID
-    assert "supabase_" in response.data["user"]
+    # The user email should be in the response
+    assert test_email in response.data["user"]
