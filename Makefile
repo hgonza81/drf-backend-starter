@@ -215,7 +215,7 @@ setup: pip-install-dev
 .PHONY: freeze
 pip-freeze:
 	@echo "❄️  Freezing current dependencies to requirements/base.txt..."
-	pip freeze > requirements/base.txt
+	pip freeze > requirements/temp_env_file.txt
 	@echo "✅ Dependencies exported successfully!"
 
 .PHONY: pip-uninstall

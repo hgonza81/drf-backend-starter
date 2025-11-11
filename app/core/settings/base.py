@@ -11,7 +11,13 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from .env import SUPABASE_PROJECT_URL, SUPABASE_PUBLIC_KEY, SUPABASE_SECRET_KEY
+
+from .env import (
+    SUPABASE_PROJECT_URL,
+    SUPABASE_PUBLIC_KEY,
+    SUPABASE_SECRET_KEY,
+    SUPABASE_ES256_PUBLIC_JWK,
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -122,12 +128,6 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Supabase
-SUPABASE = {
-    "PROJECT_URL": SUPABASE_PROJECT_URL,
-    "PUBLIC_KEY": SUPABASE_PUBLIC_KEY,
-    "SECRET_KEY": SUPABASE_SECRET_KEY,
-}
 
 # Authentication
 REST_FRAMEWORK = {
@@ -135,4 +135,12 @@ REST_FRAMEWORK = {
         "app.core.authentication.SupabaseJWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+}
+
+# Supabase
+SUPABASE = {
+    "PROJECT_URL": SUPABASE_PROJECT_URL,
+    "PUBLIC_KEY": SUPABASE_PUBLIC_KEY,
+    "SECRET_KEY": SUPABASE_SECRET_KEY,
+    "ES256_PUBLIC_JWK": SUPABASE_ES256_PUBLIC_JWK,
 }
