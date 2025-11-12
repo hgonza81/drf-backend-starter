@@ -205,7 +205,7 @@ security-check:
 	@echo "🔒 Running Bandit security scan..."
 	bandit -r ./app -c pyproject.toml
 	@echo "🛡️  Running Pip-audit for dependency vulnerabilities..."
-	pip-audit -r requirements/dev.txt
+	pip-audit -r requirements/base.txt -r requirements/dev.txt -r requirements/test.txt -r requirements/prod.txt
 
 .PHONY: quality-checks
 quality-checks:
