@@ -10,7 +10,7 @@ COMPOSE_FILES_BASE = -f $(DOCKER_DIR)/docker-compose.base
 COMPOSE_FILES_DEV = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.dev
 COMPOSE_FILES_TEST = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.test
 COMPOSE_FILES_PROD = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.prod
-COMPOSE_FILES_PROD = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.test-ci
+COMPOSE_FILES_TEST_CI = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.test-ci
 
 # ======================================================
 # HELP
@@ -131,7 +131,7 @@ test-down:
 .PHONE: tests-ci
 tests-ci:
 	@echo "🧪 Running tests in CI..."
-	docker compose $(COMPOSE_FILES_TEST) up \
+	docker compose $(COMPOSE_FILES_TEST_CI) up \
 		--build \
 		--abort-on-container-exit \
 		--exit-code-from backend \

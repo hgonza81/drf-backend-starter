@@ -7,8 +7,8 @@ services:
       dockerfile: infra/docker/Dockerfile
       target: test
     environment:
-      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY:-}
-      SUPABASE_AUTH_TEST_PASSWORD: ${SUPABASE_AUTH_TEST_PASSWORD:-}
+      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY}
+      SUPABASE_AUTH_TEST_PASSWORD: ${SUPABASE_AUTH_TEST_PASSWORD}
     env_file:
       - ../../envs/.env.base
       - ../../envs/.env.test
