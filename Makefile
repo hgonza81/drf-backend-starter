@@ -33,6 +33,7 @@ help:
 	@echo ""	
 	@echo "🧪 Local Testing:"
 	@echo "  make test              - Start test container in detached mode"
+	@echo "  make test-migrate      - Apply database migrations"
 	@echo "  make test-run          - Run tests without coverage (use CMD=<test> for specific tests)"
 	@echo "  make test-run-cov      - Run tests with coverage report (use CMD=<test> for specific tests)"
 	@echo "  make test-rebuild      - Rebuild test containers from scratch"
@@ -116,14 +117,18 @@ createsuperuser: dev
 test:
 	@echo "🚀 Starting Testing Docker container..."
 	docker compose $(COMPOSE_FILES_TEST) up -d
-	
+
+.PHONY: test-migrate
+test-migrate: test
+	docker compose $(COMPOSE_FILES_TEST) exec backend python manage.py migrate
+
 .PHONY: test-run
-test-run: test
+test-run: test-migrate
 	@echo "🚀 Running tests..."
 	docker compose $(COMPOSE_FILES_TEST) exec backend pytest -vv --no-cov $(CMD)
 
 .PHONY: test-run-cov
-test-run-cov: test
+test-run-cov: test-migrate
 	@echo "🚀 Running tests (with coverage)..."
 	docker compose $(COMPOSE_FILES_TEST) exec backend pytest $(CMD)
 
