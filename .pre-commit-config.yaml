@@ -46,7 +46,7 @@ repos:
     hooks:
       - id: detect-secrets
         name: Detect secrets
-        exclude: '(migrations/|tests/)'
+        args: ["--baseline", ".secrets.baseline"]
 
   # --------------------------------------------------
   # Bandit security checks
