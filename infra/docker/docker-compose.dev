@@ -6,6 +6,4 @@ services:
       context: ../..
       dockerfile: infra/docker/Dockerfile
       target: dev
-    env_file:
-      - ../../envs/.env
     command: python manage.py runserver 0.0.0.0:8000

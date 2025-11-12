@@ -41,7 +41,7 @@ EXPOSE 8000
 FROM base AS test
 
 # Install test-specific requirements (includes base.txt via -r)
-RUN pip install -r requirements/test.txt
+RUN pip install -r requirements/test-ci.txt
 
 # ==========================================================
 # Production stage
@@ -58,5 +58,5 @@ USER django294
 EXPOSE 8000
 
 # Default production command
-# Environment variables loaded from .env.prod
+# Environment variables loaded from .env
 CMD ["gunicorn", "app.core.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
