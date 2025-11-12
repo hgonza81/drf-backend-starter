@@ -31,10 +31,14 @@ help:
 	@echo "  make migrate           - Apply database migrations"
 	@echo "  make createsuperuser   - Create Django superuser"
 	@echo ""	
-	@echo "🧪 Testing:"
-	@echo "  make tests             - Run tests in Docker and clean unused images"
-	@echo "  make test              - Allow to run a specific test with CMD=<test> in Docker"
-	@echo "  make test-down         - Stop test containers and clean unused images"
+	@echo "🧪 Local Testing:"
+	@echo "  make test              - Start test container in detached mode"
+	@echo "  make test-run          - Run tests without coverage (use CMD=<test> for specific tests)"
+	@echo "  make test-run-cov      - Run tests with coverage report (use CMD=<test> for specific tests)"
+	@echo "  make test-rebuild      - Rebuild test containers from scratch"
+	@echo "  make test-down         - Stop test containers and clean up"
+	@echo ""	
+	@echo "🧪 CI Testing:"
 	@echo "  make tests-ci          - Run tests in Docker for CI workflow"
 	@echo ""
 	@echo "🚢 Production:"
@@ -66,18 +70,19 @@ dev:
 	@echo "🚀 Starting Django (development mode)..."
 	docker compose $(COMPOSE_FILES_DEV) up -d
 
+.PHONY: dev-rebuild
+dev-rebuild:
+	@set -e; \
+	echo "🔄 Rebuilding dev environment..."; \
+	docker compose $(COMPOSE_FILES_DEV) up --build --force-recreate -d; \
+	echo "🧹 Cleaning up dangling images..."; \
+	docker image prune -f > /dev/null; \
+	echo "✅ Dev environment rebuilt and cleaned successfully."
+
 .PHONY: dev-down
 dev-down:
 	@echo "🧹 Deleting dev container, networks, and volumes..."
 	docker compose $(COMPOSE_FILES_DEV) down
-
-.PHONY: dev-rebuild
-dev-rebuild:
-	@set -e; \
-	echo "Rebuilding dev environment..."; \
-	docker compose $(COMPOSE_FILES_DEV) up --build --force-recreate --remove-orphans -d; \
-	if [ -z "$$CI" ]; then docker image prune -f --filter "dangling=true" > /dev/null; fi; \
-	echo "✅ Dev environment rebuilt and cleaned successfully."
 
 .PHONY: dev-seed
 dev-seed: dev
@@ -104,29 +109,41 @@ createsuperuser: dev
 	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py createsuperuser
 
 # ======================================================
-# TEST COMMANDS
+# LOCAL DOCKER TEST COMMANDS
 # ======================================================
-
-.PHONY: tests
-tests:
-	@echo "🧪 Running local tests with Docker Compose..."
-	@docker compose $(COMPOSE_FILES_TEST) up --build \
-		--abort-on-container-exit \
-		--exit-code-from backend
-	@EXIT_CODE=$$?; \
-	echo "🧹 Cleaning up test containers..."; \
-	docker compose $(COMPOSE_FILES_TEST) down --volumes --remove-orphans; \
-	exit $$EXIT_CODE
 
 .PHONY: test
 test:
-	@echo "🧪 Running tests for $(CMD)..."
-	docker compose $(COMPOSE_FILES_TEST) run --rm backend pytest -vv --no-cov $(CMD)
+	@echo "🚀 Starting Testing Docker container..."
+	docker compose $(COMPOSE_FILES_TEST) up -d
+	
+.PHONY: test-run
+test-run: test
+	@echo "🚀 Running tests..."
+	docker compose $(COMPOSE_FILES_TEST) exec backend pytest -vv --no-cov $(CMD)
+
+.PHONY: test-run-cov
+test-run-cov: test
+	@echo "🚀 Running tests (with coverage)..."
+	docker compose $(COMPOSE_FILES_TEST) exec backend pytest $(CMD)
+
+.PHONY: test-rebuild
+test-rebuild:
+	@set -e; \
+	echo "🔄 Rebuilding test environment..."; \
+	docker compose $(COMPOSE_FILES_TEST) up --build --force-recreate -d; \
+	echo "🧹 Cleaning up dangling images..."; \
+	docker image prune -f > /dev/null; \
+	echo "✅ Test environment rebuilt and cleaned successfully."
 
 .PHONY: test-down
 test-down:
-	@echo "🧹 Deleting test container, networks, and volumes..."
-	docker compose $(COMPOSE_FILES_TEST) down -v
+	@echo "🧹 Deleting dev container, networks, and volumes..."
+	docker compose $(COMPOSE_FILES_TEST) down
+
+# ======================================================
+# CI WORKFLOW DOCKER TEST COMMANDS
+# ======================================================
 
 .PHONE: tests-ci
 tests-ci:
