@@ -27,9 +27,10 @@ jobs:
       - name: Run tests with coverage
         env:
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_AUTH_TEST_PASSWORD: ${{ secrets.SUPABASE_AUTH_TEST_PASSWORD }}
         run: |
           echo "🧩 Running pytest inside container..."
-          make test
+          make tests
 
       - name: Upload coverage as artifact
         if: success()

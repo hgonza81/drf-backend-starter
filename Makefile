@@ -105,8 +105,8 @@ createsuperuser: dev
 # TEST COMMANDS
 # ======================================================
 
-.PHONY: test
-test:
+.PHONY: tests
+tests:
 	@set -e; \
 	echo "Running tests... (use FLAG=--build to force rebuild)"; \
 	docker compose $(COMPOSE_FILES_TEST) up $(FLAG) \
@@ -123,6 +123,10 @@ test:
 		docker image prune -f --filter "dangling=true" > /dev/null; \
 	fi; \
 	exit $$EXIT_CODE
+
+.PHONY: test
+test: 
+	docker compose $(COMPOSE_FILES_TEST) run --rm backend pytest -vv --no-cov $(CMD)
 
 .PHONY: test-down
 test-down:

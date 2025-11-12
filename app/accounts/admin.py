@@ -7,14 +7,22 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    ordering = ["email"]
+    ordering = ["-date_joined"]
     list_display = ["email", "full_name", "is_staff", "is_active"]
-    search_fields = ["email", "full_name"]
+    search_fields = ["email", "first_name", "last_name"]
     readonly_fields = ("supabase_id",)
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal info", {"fields": ("full_name",)}),
+        (
+            "Personal info",
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                )
+            },
+        ),
         (
             "Permissions",
             {

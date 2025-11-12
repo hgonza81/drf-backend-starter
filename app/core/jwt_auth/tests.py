@@ -3,6 +3,7 @@ import logging
 import jwt
 import pytest
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,9 +11,10 @@ from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
 from supabase import Client, create_client
 
-from app.core.auth import SupabaseJWTAuthentication
+from app.core.jwt_auth.authentication import SupabaseJWTAuthentication
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 # Simple DRF view to test authentication manually
@@ -75,6 +77,7 @@ def test_supabase_jwt_auth_invalid_token():
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
+@pytest.mark.integration
 @pytest.mark.django_db
 def test_supabase_real_authentication():
     """
@@ -86,10 +89,10 @@ def test_supabase_real_authentication():
     import os
 
     # Get credentials from environment or skip test
-    test_email = os.getenv("SUPABASE_TEST_EMAIL", "hernan.gonzalez81@gmail.com")
-    test_password = os.getenv("SUPABASE_TEST_PASSWORD", "wkh@frf.rhx*vwb7MUG")
+    test_email = os.getenv("SUPABASE_AUTH_TEST_EMAIL", "")
+    test_password = os.getenv("SUPABASE_AUTH_TEST_PASSWORD", "")
 
-    # Create Supabase client
+    # Create Supabase Auth API client
     supabase: Client = create_client(
         settings.SUPABASE["PROJECT_URL"], settings.SUPABASE["PUBLIC_KEY"]
     )
@@ -116,3 +119,6 @@ def test_supabase_real_authentication():
     assert response.data["message"] == "Authenticated"
     # The user email should be in the response
     assert test_email in response.data["user"]
+    assert User.objects.filter(email=test_email).exists(), (
+        "User should be synced locally"
+    )

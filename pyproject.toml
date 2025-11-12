@@ -30,6 +30,11 @@ filterwarnings = [
     "default::PendingDeprecationWarning:app.*",
 ]
 
+# Custom markers
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+]
+
 [tool.coverage.run]
 branch = false
 source = ["app"]

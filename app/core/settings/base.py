@@ -129,10 +129,10 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# Authentication
+# JWT Authentication
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "app.core.auth.SupabaseJWTAuthentication",
+        "app.core.jwt_auth.authentication.SupabaseJWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
 }
