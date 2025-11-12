@@ -19,20 +19,21 @@ COMPOSE_FILES_PROD = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.prod
 help:
 	@echo "📋 Available commands:"
 	@echo ""
-	@echo "🔧 Django Management:"
-	@echo "  make makemigrations    - Create new database migrations"
-	@echo "  make migrate           - Apply database migrations"
-	@echo "  make createsuperuser   - Create Django superuser"
-	@echo ""
 	@echo "🚀 Development:"
 	@echo "  make dev               - Start development server"
 	@echo "  make dev-down          - Stop development server"
 	@echo "  make dev-rebuild       - Rebuild development containers"
 	@echo "  make dev-seed          - Seed database with test data"
 	@echo ""
+	@echo "🔧 Django Management:"
+	@echo "  make makemigrations    - Create new database migrations"
+	@echo "  make migrate           - Apply database migrations"
+	@echo "  make createsuperuser   - Create Django superuser"
+	@echo ""	
 	@echo "🧪 Testing:"
-	@echo "  make test              - Run tests in Docker"
-	@echo "  make test-down         - Stop test containers"
+	@echo "  make test              - Run tests in Docker and clean unused images"
+	@echo "  make test-down         - Stop test containers and clean unused images"
+	@echo "  make test-ci           - Run tests in Docker for CI workflow"
 	@echo ""
 	@echo "🚢 Production:"
 	@echo "  make prod              - Start production server"
@@ -55,32 +56,13 @@ help:
 	@echo ""
 
 # ======================================================
-# DJANGO MANAGEMENT COMMANDS
-# ======================================================
-
-.PHONY: makemigrations
-makemigrations:
-	@echo "📦 Making new migrations..."
-	docker compose $(COMPOSE_FILES_DEV) run --rm backend python manage.py makemigrations
-
-.PHONY: migrate
-migrate:
-	@echo "⚙️ Applying database migrations..."
-	docker compose $(COMPOSE_FILES_DEV) run --rm backend python manage.py migrate
-
-.PHONY: createsuperuser
-createsuperuser:
-	@echo "👤 Creating Django superuser..."
-	docker compose $(COMPOSE_FILES_DEV) run --rm backend python manage.py createsuperuser
-
-# ======================================================
 # DEVELOPMENT COMMANDS
 # ======================================================
 
 .PHONY: dev
 dev:
 	@echo "🚀 Starting Django (development mode)..."
-	docker compose $(COMPOSE_FILES_DEV) up --build --remove-orphans -d
+	docker compose $(COMPOSE_FILES_DEV) up -d
 
 .PHONY: dev-down
 dev-down:
@@ -89,13 +71,35 @@ dev-down:
 
 .PHONY: dev-rebuild
 dev-rebuild:
-	@echo "♻️  Rebuilding development image..."
-	docker compose $(COMPOSE_FILES_DEV) up --build --force-recreate --remove-orphans -d
+	@set -e; \
+	echo "Rebuilding dev environment..."; \
+	docker compose $(COMPOSE_FILES_DEV) up --build --force-recreate --remove-orphans -d; \
+	if [ -z "$$CI" ]; then docker image prune -f --filter "dangling=true" > /dev/null; fi; \
+	echo "✅ Dev environment rebuilt and cleaned successfully."
 
 .PHONY: dev-seed
-dev-seed:
+dev-seed: dev
 	@echo "🌱 Seeding database with test data..."
-	docker compose $(COMPOSE_FILES_DEV) run --rm backend python manage.py seed_database
+	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py seed_database
+
+# ======================================================
+# DJANGO MANAGEMENT COMMANDS
+# ======================================================
+
+.PHONY: makemigrations
+makemigrations: dev
+	@echo "📦 Making new migrations..."
+	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py makemigrations
+
+.PHONY: migrate
+migrate: dev
+	@echo "⚙️ Applying database migrations..."
+	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py migrate
+
+.PHONY: createsuperuser
+createsuperuser: dev
+	@echo "👤 Creating Django superuser..."
+	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py createsuperuser
 
 # ======================================================
 # TEST COMMANDS
@@ -103,9 +107,22 @@ dev-seed:
 
 .PHONY: test
 test:
-	@echo "🧪 Running tests..."
-	docker compose $(COMPOSE_FILES_TEST) up --build --abort-on-container-exit --remove-orphans
-	@docker compose $(COMPOSE_FILES_TEST) down
+	@set -e; \
+	echo "Running tests... (use FLAG=--build to force rebuild)"; \
+	docker compose $(COMPOSE_FILES_TEST) up $(FLAG) \
+		--abort-on-container-exit \
+		--exit-code-from backend \
+		--remove-orphans; \
+	EXIT_CODE=$$?; \
+	if [ $$EXIT_CODE -eq 0 ]; then \
+		docker compose $(COMPOSE_FILES_TEST) down --volumes --remove-orphans; \
+	else \
+		echo "Tests failed — keeping containers for debugging."; \
+	fi; \
+	if [ -z "$$CI" ]; then \
+		docker image prune -f --filter "dangling=true" > /dev/null; \
+	fi; \
+	exit $$EXIT_CODE
 
 .PHONY: test-down
 test-down:
@@ -119,7 +136,7 @@ test-down:
 .PHONY: prod
 prod:
 	@echo "🚀 Starting production server (Gunicorn)..."
-	docker compose $(COMPOSE_FILES_PROD) up --build --remove-orphans -d
+	docker compose $(COMPOSE_FILES_PROD) up --build -d
 
 .PHONY: prod-down
 prod-down:

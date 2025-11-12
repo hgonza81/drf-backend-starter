@@ -1,6 +1,7 @@
 services:
   backend:
     container_name: backend_test
+    image: docker-backend:test
     build:
       context: ../..
       dockerfile: infra/docker/Dockerfile

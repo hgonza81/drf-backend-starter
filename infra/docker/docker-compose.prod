@@ -1,9 +1,9 @@
 services:
   backend:
     container_name: backend_prod
+    image: docker-backend:prod
     build:
-      context: ../..
-      dockerfile: infra/docker/Dockerfile
+      cockerfile: infra/docker/Dockerfile
       target: prod
     env_file:
       - ../../envs/.env.base

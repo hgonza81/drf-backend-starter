@@ -23,11 +23,15 @@ env/
 # Django
 # ======================================================
 *.log
-db.sqlite3
-db.sqlite3-journal
 /staticfiles/
 /static/
 /media/
+
+# ======================================================
+# Dev and test sqlite databases
+# ======================================================
+/db*.sqlite3*
+/db*.sqlite3*
 
 # Django migrations (optional - uncomment if you don't want to track migrations)
 # **/migrations/*.py
