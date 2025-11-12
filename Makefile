@@ -17,28 +17,44 @@ COMPOSE_FILES_TEST_CI = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.te
 .PHONY: help
 help:
 	@echo "📋 Available commands:"
-
+	@echo ""
+	@echo "🚀 Development:"
+	@echo "  make up                - Start development container"
+	@echo "  make down              - Stop development container"
+	@echo "  make logs              - Show container logs"
+	@echo "  make rebuild           - Rebuild development container from scratch"
+	@echo "  make seed              - Seed database with test data"
+	@echo ""
+	@echo "🔧 Django Management:"
+	@echo "  make makemigrations    - Create new database migrations"
+	@echo "  make migrate           - Apply database migrations"
+	@echo "  make createsuperuser   - Create Django superuser"
+	@echo ""
+	@echo "🧪 Testing:"
+	@echo "  make test              - Run tests without coverage (use CMD=<test> for specific tests)"
+	@echo "  make test-cov          - Run tests with coverage report (use CMD=<test> for specific tests)"
+	@echo "  make tests-ci          - Run tests in CI environment"
+	@echo ""
+	@echo "🐛 Debug (attach debugger to port 5679):"
+	@echo "  make test-debug        - Run tests with debugpy (use CMD=<test> for specific tests)"
+	@echo "  make test-cov-debug    - Run tests with coverage and debugpy (use CMD=<test>)"
+	@echo ""
+	@echo "✅ Code Quality:"
+	@echo "  make lint              - Run Ruff linter & formatter (auto-fix)"
+	@echo "  make lint-check        - Run Ruff lint check (no fixes)"
+	@echo "  make hooks-check       - Validate configuration files"
+	@echo "  make detect-secrets    - Detect secrets in codebase"
+	@echo "  make detect-secrets-scan   - Scan and create secrets baseline"
+	@echo "  make detect-secrets-audit  - Audit secrets baseline"
+	@echo "  make security-check    - Run Bandit security scan & pip-audit"
+	@echo "  make quality-checks    - Run all quality checks (summary)"
+	@echo ""
+	@echo "📦 Dependencies:"
+	@echo "  make setup             - Install dev dependencies and pre-commit hooks"
+	@echo "  make pip-install-dev   - Install dev dependencies only"
+	@echo "  make pip-uninstall     - Uninstall all libraries"
 	@echo ""
 
-# ======================================================
-# DEPENDENCIES & DEV ENVIRONMENT SETUP COMMANDS
-# ======================================================
-
-.PHONY: pip-install
-pip-install-dev:
-	@echo "✅ Install all libraries..."
-	pip install -r requirements/dev.txt
-
-.PHONY: setup
-setup: pip-install
-	@echo "🚀 Installing all libraries and Git hooks..."
-	pre-commit install --hook-type pre-commit
-
-.PHONY: pip-uninstall
-pip-uninstall:
-	@echo "🧹 Uninstall all libraries..."
-	pip freeze | xargs pip uninstall -y
-	
 # ======================================================
 # DEVELOPMENT COMMANDS
 # ======================================================
@@ -48,20 +64,14 @@ up:
 	@echo "🚀 Starting Django (dev container)..."
 	docker compose $(COMPOSE_FILES_DEV) up -d
 
-.PHONY: test
-test: up
-	@echo "🚀 Running tests (dev container)..."
-	docker compose $(COMPOSE_FILES_DEV) exec backend pytest -vv --no-cov $(CMD)
+.PHONY: down
+down:
+	@echo "🧹 Deleting dev container, networks, and volumes..."
+	docker compose $(COMPOSE_FILES_DEV) down
 
-.PHONY: test-cov
-test-cov: up
-	@echo "🚀 Running tests in dev container (with coverage)..."
-	docker compose $(COMPOSE_FILES_DEV) exec backend pytest $(CMD)
-
-.PHONY: seed
-seed: up
-	@echo "🌱 Seeding database with test data (dev container)..."
-	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py seed_database
+.PHONY: logs
+logs: up
+	docker compose $(COMPOSE_FILES_DEV) logs -f backend
 
 .PHONY: rebuild
 rebuild:
@@ -72,10 +82,10 @@ rebuild:
 	docker image prune -f > /dev/null; \
 	echo "✅ Dev container rebuilt and cleaned successfully."
 
-.PHONY: down
-down:
-	@echo "🧹 Deleting dev container, networks, and volumes..."
-	docker compose $(COMPOSE_FILES_DEV) down
+.PHONY: seed
+seed: up
+	@echo "🌱 Seeding database with test data (dev container)..."
+	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py seed_database
 
 # ======================================================
 # DJANGO MANAGEMENT COMMANDS
@@ -97,8 +107,36 @@ createsuperuser: up
 	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py createsuperuser
 
 # ======================================================
-# CI WORKFLOW TEST COMMANDS
+# DEBUG COMMANDS (with debugpy)
 # ======================================================
+
+.PHONY: test-debug
+test-debug: up
+	@echo "🐛 Running tests with debugpy (waiting for debugger to attach)..."
+	@echo "💡 Attach your debugger to port 5679"
+	@echo "💡 Use CMD=<test> to run specific tests"
+	docker compose $(COMPOSE_FILES_DEV) exec backend python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5679 --wait-for-client -m pytest -vv --no-cov $(CMD)
+
+.PHONY: test-cov-debug
+test-cov-debug: up
+	@echo "🐛 Running tests with coverage and debugpy (waiting for debugger to attach)..."
+	@echo "💡 Attach your debugger to port 5679"
+	@echo "💡 Use CMD=<test> to run specific tests"
+	docker compose $(COMPOSE_FILES_DEV) exec backend python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5679 --wait-for-client -m pytest $(CMD)
+
+# ======================================================
+# TESTING COMMANDS
+# ======================================================
+
+.PHONY: test
+test: up
+	@echo "🚀 Running tests (dev container)..."
+	docker compose $(COMPOSE_FILES_DEV) exec backend pytest -vv --no-cov $(CMD)
+
+.PHONY: test-cov
+test-cov: up
+	@echo "🚀 Running tests in dev container (with coverage)..."
+	docker compose $(COMPOSE_FILES_DEV) exec backend pytest $(CMD)
 
 .PHONE: tests-ci
 tests-ci:
@@ -172,4 +210,23 @@ quality-checks:
 	@make security-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
 	@echo ""
 	@echo "✅ All quality checks completed"
+
+# ======================================================
+# DEPENDENCIES & INITIALIZATION COMMANDS
+# ======================================================
+
+.PHONY: setup
+setup: pip-install-dev
+	@echo "🚀 Installing all libraries and Git hooks..."
+	pre-commit install --hook-type pre-commit
+
+.PHONY: pip-install-dev
+pip-install-dev:
+	@echo "✅ Install all libraries..."
+	pip install -r requirements/dev.txt
+
+.PHONY: pip-uninstall
+pip-uninstall:
+	@echo "🧹 Uninstall all libraries..."
+	pip freeze | xargs pip uninstall -y
 

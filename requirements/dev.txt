@@ -9,3 +9,4 @@ drf_spectacular==0.29.0
 drf_spectacular_sidecar==2025.10.1
 pytest-django==4.11.1
 pytest-cov==7.0.0
+debugpy>=1.8.0

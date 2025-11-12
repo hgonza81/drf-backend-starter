@@ -6,4 +6,16 @@ services:
       context: ../..
       dockerfile: infra/docker/Dockerfile
       target: dev
-    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"   # web server
+      - "5678:5678"   # debugger (runserver)
+      - "5679:5679"   # debugger (commands)
+    command:
+      [
+        "python",
+        "-Xfrozen_modules=off",
+        "-m", "debugpy",
+        "--listen", "0.0.0.0:5678",
+        "--wait-for-client",
+        "manage.py", "runserver", "0.0.0.0:8000"
+      ]

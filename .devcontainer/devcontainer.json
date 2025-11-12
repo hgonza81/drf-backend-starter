@@ -1,0 +1,11 @@
+{
+  "name": "Backend Dev",
+  "dockerComposeFile": "../infra/docker/docker-compose.dev",
+  "service": "backend",
+  "workspaceFolder": "/app",
+  "extensions": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ms-azuretools.vscode-docker"
+  ]
+}

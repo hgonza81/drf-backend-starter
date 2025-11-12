@@ -31,7 +31,6 @@ env/
 # Dev and test sqlite databases
 # ======================================================
 /db*.sqlite3*
-/db*.sqlite3*
 
 # Django migrations (optional - uncomment if you don't want to track migrations)
 # **/migrations/*.py
