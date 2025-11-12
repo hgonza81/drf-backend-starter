@@ -9,4 +9,5 @@ services:
     env_file:
       - ../../envs/.env.base
       - ../../envs/.env.test
-    command: sh -c "python manage.py migrate && pytest"
+    #command: sh -c "python manage.py migrate && pytest"
+    command: sh -c "echo 'SUPABASE_AUTH_TEST_PASSWORD length:' ${#SUPABASE_AUTH_TEST_PASSWORD} && pytest"
