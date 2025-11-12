@@ -6,8 +6,10 @@ services:
       context: ../..
       dockerfile: infra/docker/Dockerfile
       target: test
+    environment:
+      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY:-}
+      SUPABASE_AUTH_TEST_PASSWORD: ${SUPABASE_AUTH_TEST_PASSWORD:-}
     env_file:
       - ../../envs/.env.base
       - ../../envs/.env.test
-    #command: sh -c "python manage.py migrate && pytest"
-    command: sh -c "echo 'SUPABASE_AUTH_TEST_PASSWORD length:' ${#SUPABASE_AUTH_TEST_PASSWORD} && pytest"
+    command: sh -c "python manage.py migrate && pytest"
