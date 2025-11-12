@@ -10,6 +10,7 @@ COMPOSE_FILES_BASE = -f $(DOCKER_DIR)/docker-compose.base
 COMPOSE_FILES_DEV = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.dev
 COMPOSE_FILES_TEST = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.test
 COMPOSE_FILES_PROD = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.prod
+COMPOSE_FILES_PROD = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.test-ci
 
 # ======================================================
 # HELP
@@ -31,9 +32,10 @@ help:
 	@echo "  make createsuperuser   - Create Django superuser"
 	@echo ""	
 	@echo "🧪 Testing:"
-	@echo "  make test              - Run tests in Docker and clean unused images"
+	@echo "  make tests             - Run tests in Docker and clean unused images"
+	@echo "  make test              - Allow to run a specific test with CMD=<test> in Docker"
 	@echo "  make test-down         - Stop test containers and clean unused images"
-	@echo "  make test-ci           - Run tests in Docker for CI workflow"
+	@echo "  make tests-ci          - Run tests in Docker for CI workflow"
 	@echo ""
 	@echo "🚢 Production:"
 	@echo "  make prod              - Start production server"
@@ -107,31 +109,33 @@ createsuperuser: dev
 
 .PHONY: tests
 tests:
-	@set -e; \
-	echo "Running tests... (use FLAG=--build to force rebuild)"; \
-	docker compose $(COMPOSE_FILES_TEST) up $(FLAG) \
+	@echo "🧪 Running local tests with Docker Compose..."
+	@docker compose $(COMPOSE_FILES_TEST) up --build \
 		--abort-on-container-exit \
-		--exit-code-from backend \
-		--remove-orphans; \
-	EXIT_CODE=$$?; \
-	if [ $$EXIT_CODE -eq 0 ]; then \
-		docker compose $(COMPOSE_FILES_TEST) down --volumes --remove-orphans; \
-	else \
-		echo "Tests failed — keeping containers for debugging."; \
-	fi; \
-	if [ -z "$$CI" ]; then \
-		docker image prune -f --filter "dangling=true" > /dev/null; \
-	fi; \
+		--exit-code-from backend
+	@EXIT_CODE=$$?; \
+	echo "🧹 Cleaning up test containers..."; \
+	docker compose $(COMPOSE_FILES_TEST) down --volumes --remove-orphans; \
 	exit $$EXIT_CODE
 
 .PHONY: test
-test: 
+test:
+	@echo "🧪 Running tests for $(CMD)..."
 	docker compose $(COMPOSE_FILES_TEST) run --rm backend pytest -vv --no-cov $(CMD)
 
 .PHONY: test-down
 test-down:
 	@echo "🧹 Deleting test container, networks, and volumes..."
 	docker compose $(COMPOSE_FILES_TEST) down -v
+
+.PHONE: tests-ci
+tests-ci:
+	@echo "🧪 Running tests in CI..."
+	docker compose $(COMPOSE_FILES_TEST) up \
+		--build \
+		--abort-on-container-exit \
+		--exit-code-from backend \
+		--remove-orphans
 
 # ======================================================
 # PRODUCTION COMMANDS

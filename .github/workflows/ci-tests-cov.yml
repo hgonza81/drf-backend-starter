@@ -30,7 +30,7 @@ jobs:
           SUPABASE_AUTH_TEST_PASSWORD: ${{ secrets.SUPABASE_AUTH_TEST_PASSWORD }}
         run: |
           echo "🧩 Running pytest inside container..."
-          make tests
+          make tests-ci
 
       - name: Upload coverage as artifact
         if: success()
