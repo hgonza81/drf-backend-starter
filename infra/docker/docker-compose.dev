@@ -7,6 +7,5 @@ services:
       dockerfile: infra/docker/Dockerfile
       target: dev
     env_file:
-      - ../../envs/.env.base
-      - ../../envs/.env.dev
+      - ../../envs/.env
     command: python manage.py runserver 0.0.0.0:8000

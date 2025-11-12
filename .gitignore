@@ -101,11 +101,9 @@ secrets/
 credentials/
 
 # ======================================================
-# Environment Files (with secrets)
+# Environment File (with secrets)
 # ======================================================
-envs/.env.dev
-envs/.env.test
-envs/.env.prod
+envs/.env
 
 # ======================================================
 # Temporary Files

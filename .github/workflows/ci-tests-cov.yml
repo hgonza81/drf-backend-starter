@@ -20,8 +20,8 @@ jobs:
 
       - name: Prepare environment files
         run: |
-          # Create .env.test if needed
-          cp envs/.env.test.example envs/.env.test || true
+          # Create .env
+          cp envs/.env.test-ci-template envs/.env || true
           echo "✅ Environment files ready"
 
       - name: Run tests with coverage

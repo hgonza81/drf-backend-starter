@@ -8,8 +8,6 @@ DOCKER_DIR = infra/docker
 # Compose files
 COMPOSE_FILES_BASE = -f $(DOCKER_DIR)/docker-compose.base
 COMPOSE_FILES_DEV = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.dev
-COMPOSE_FILES_TEST = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.test
-COMPOSE_FILES_PROD = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.prod
 COMPOSE_FILES_TEST_CI = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.test-ci
 
 # ======================================================
@@ -63,115 +61,93 @@ help:
 	@echo ""
 
 # ======================================================
+# DEPENDENCIES & DEV ENVIRONMENT SETUP COMMANDS
+# ======================================================
+
+.PHONY: pip-install
+pip-install-dev:
+	@echo "✅ Install all libraries..."
+	pip install -r requirements/dev.txt
+
+.PHONY: setup
+setup: pip-install
+	@echo "🚀 Installing all libraries and Git hooks..."
+	pre-commit install --hook-type pre-commit
+
+.PHONY: pip-uninstall
+pip-uninstall:
+	@echo "🧹 Uninstall all libraries..."
+	pip freeze | xargs pip uninstall -y
+	
+# ======================================================
 # DEVELOPMENT COMMANDS
 # ======================================================
 
-.PHONY: dev
-dev:
-	@echo "🚀 Starting Django (development mode)..."
+.PHONY: up
+up:
+	@echo "🚀 Starting Django (dev container)..."
 	docker compose $(COMPOSE_FILES_DEV) up -d
 
-.PHONY: dev-rebuild
-dev-rebuild:
+.PHONY: test
+test: up
+	@echo "🚀 Running tests (dev container)..."
+	docker compose $(COMPOSE_FILES_DEV) exec backend pytest -vv --no-cov $(CMD)
+
+.PHONY: test-cov
+test-cov: up
+	@echo "🚀 Running tests in dev container (with coverage)..."
+	docker compose $(COMPOSE_FILES_DEV) exec backend pytest $(CMD)
+
+.PHONY: seed
+seed: up
+	@echo "🌱 Seeding database with test data (dev container)..."
+	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py seed_database
+
+.PHONY: rebuild
+rebuild:
 	@set -e; \
-	echo "🔄 Rebuilding dev environment..."; \
+	echo "🔄 Rebuilding (dev container)..."; \
 	docker compose $(COMPOSE_FILES_DEV) up --build --force-recreate -d; \
 	echo "🧹 Cleaning up dangling images..."; \
 	docker image prune -f > /dev/null; \
-	echo "✅ Dev environment rebuilt and cleaned successfully."
+	echo "✅ Dev container rebuilt and cleaned successfully."
 
-.PHONY: dev-down
-dev-down:
+.PHONY: down
+down:
 	@echo "🧹 Deleting dev container, networks, and volumes..."
 	docker compose $(COMPOSE_FILES_DEV) down
-
-.PHONY: dev-seed
-dev-seed: dev
-	@echo "🌱 Seeding database with test data..."
-	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py seed_database
 
 # ======================================================
 # DJANGO MANAGEMENT COMMANDS
 # ======================================================
 
 .PHONY: makemigrations
-makemigrations: dev
-	@echo "📦 Making new migrations..."
+makemigrations: up
+	@echo "📦 Making new migrations (dev container)..."
 	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py makemigrations
 
 .PHONY: migrate
-migrate: dev
-	@echo "⚙️ Applying database migrations..."
+migrate: up
+	@echo "⚙️ Applying database migrations (dev container)..."
 	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py migrate
 
 .PHONY: createsuperuser
-createsuperuser: dev
-	@echo "👤 Creating Django superuser..."
+createsuperuser: up
+	@echo "👤 Creating Django superuser (dev container)..."
 	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py createsuperuser
 
 # ======================================================
-# LOCAL DOCKER TEST COMMANDS
-# ======================================================
-
-.PHONY: test
-test:
-	@echo "🚀 Starting Testing Docker container..."
-	docker compose $(COMPOSE_FILES_TEST) up -d
-
-.PHONY: test-migrate
-test-migrate: test
-	docker compose $(COMPOSE_FILES_TEST) exec backend python manage.py migrate
-
-.PHONY: test-run
-test-run: test-migrate
-	@echo "🚀 Running tests..."
-	docker compose $(COMPOSE_FILES_TEST) exec backend pytest -vv --no-cov $(CMD)
-
-.PHONY: test-run-cov
-test-run-cov: test-migrate
-	@echo "🚀 Running tests (with coverage)..."
-	docker compose $(COMPOSE_FILES_TEST) exec backend pytest $(CMD)
-
-.PHONY: test-rebuild
-test-rebuild:
-	@set -e; \
-	echo "🔄 Rebuilding test environment..."; \
-	docker compose $(COMPOSE_FILES_TEST) up --build --force-recreate -d; \
-	echo "🧹 Cleaning up dangling images..."; \
-	docker image prune -f > /dev/null; \
-	echo "✅ Test environment rebuilt and cleaned successfully."
-
-.PHONY: test-down
-test-down:
-	@echo "🧹 Deleting dev container, networks, and volumes..."
-	docker compose $(COMPOSE_FILES_TEST) down
-
-# ======================================================
-# CI WORKFLOW DOCKER TEST COMMANDS
+# CI WORKFLOW TEST COMMANDS
 # ======================================================
 
 .PHONE: tests-ci
 tests-ci:
-	@echo "🧪 Running tests in CI..."
-	docker compose $(COMPOSE_FILES_TEST_CI) up \
+	@echo "🧪 Running tests (test container)..."
+	docker compose $(COMPOSE_FILES_TEST) up \
 		--build \
 		--abort-on-container-exit \
 		--exit-code-from backend \
 		--remove-orphans
-
-# ======================================================
-# PRODUCTION COMMANDS
-# ======================================================
-
-.PHONY: prod
-prod:
-	@echo "🚀 Starting production server (Gunicorn)..."
-	docker compose $(COMPOSE_FILES_PROD) up --build -d
-
-.PHONY: prod-down
-prod-down:
-	@echo "🧹 Stopping production containers..."
-	docker compose $(COMPOSE_FILES_PROD) down
 
 # ======================================================
 # CODE QUALITY & VALIDATION COMMANDS
@@ -227,31 +203,3 @@ quality-checks:
 	@echo ""
 	@echo "✅ All quality checks completed"
 
-# ======================================================
-# DEPENDENCIES & INITIALIZATION COMMANDS
-# ======================================================
-
-.PHONY: setup
-setup: pip-install-dev
-	@echo "🚀 Installing pre-commit hooks..."
-	pre-commit install --hook-type pre-commit
-
-.PHONY: pip-uninstall
-pip-uninstall:
-	@echo "🧹 Uninstall all libraries..."
-	pip freeze | xargs pip uninstall -y
-
-.PHONY: pip-install-dev
-pip-install-dev:
-	@echo "✅ Install all libraries..."
-	pip install -r requirements/dev.txt
-
-.PHONY: pip-install-test
-pip-install-test: 
-	@echo "✅ Install all libraries..."
-	pip install -r requirements/test.txt
-
-.PHONY: pip-install-prod
-pip-install-prod:
-	@echo "✅ Install all libraries..."
-	pip install -r requirements/prod.txt
