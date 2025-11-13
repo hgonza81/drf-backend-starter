@@ -1,6 +1,6 @@
 {
   "name": "Backend Dev",
-  "dockerComposeFile": "../infra/docker/docker-compose.dev",
+  "dockerComposeFile": "../infra/docker/compose.dev.yml",
   "service": "backend",
   "workspaceFolder": "/app",
   "extensions": [

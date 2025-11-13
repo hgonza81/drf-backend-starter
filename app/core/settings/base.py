@@ -12,22 +12,21 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
-from .load_env import (
-    SUPABASE_ES256_PUBLIC_JWK,
-    SUPABASE_PROJECT_URL,
-    SUPABASE_PUBLIC_KEY,
-    SUPABASE_SECRET_KEY,
-)
+from .load_env_utils import get_env_var, load_json_env_var
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
+# __file__ = app/core/settings/base.py
+# parent.parent.parent.parent = / (project root)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-xx2k@9((pg9y(@#ynptpj1u9613nmy9x(tso4vnl2-y1+&#f(+"
+SECRET_KEY = get_env_var("DJANGO_SECRET_KEY")
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
 ALLOWED_HOSTS: list[str] = []
 
@@ -82,7 +81,7 @@ WSGI_APPLICATION = "app.core.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR.parent.parent / "db.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -129,24 +128,29 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# JWT Authentication
+# =====================================================================
+# Custom COMMON/BASE configuration
+# =====================================================================
+
+# Authentication
+AUTH_USER_MODEL = "accounts.User"
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "app.core.jwt_auth.authentication.SupabaseJWTAuthentication",
+        "app.jwt_auth.authentication.SupabaseJWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
 }
 
-AUTH_USER_MODEL = "accounts.User"
-
-# Supabase
-SUPABASE = {
-    "PROJECT_URL": SUPABASE_PROJECT_URL,
-    "PUBLIC_KEY": SUPABASE_PUBLIC_KEY,
-    "SECRET_KEY": SUPABASE_SECRET_KEY,
-    "ES256_PUBLIC_JWK": SUPABASE_ES256_PUBLIC_JWK,
+# Supabase authentication configuration
+JWT_AUTH = {
+    "PROJECT_URL": get_env_var("SUPABASE_PROJECT_URL"),
+    "PUBLIC_KEY": get_env_var("SUPABASE_PUBLIC_KEY"),
+    "SECRET_KEY": get_env_var("SUPABASE_SECRET_KEY"),
+    "ES256_PUBLIC_JWK": load_json_env_var("SUPABASE_ES256_PUBLIC_JWK"),
 }
 
+# Logging
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

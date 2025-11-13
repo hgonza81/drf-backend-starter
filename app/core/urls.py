@@ -24,6 +24,7 @@ urlpatterns = [
     path("api/", include("app.accounts.urls")),
 ]
 
+# OpenAPI: Spectacular configuration
 if settings.DEBUG:
     from drf_spectacular.views import (
         SpectacularAPIView,

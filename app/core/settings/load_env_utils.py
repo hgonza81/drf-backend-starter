@@ -27,10 +27,3 @@ def load_json_env_var(name: str) -> dict | None:
         return json.loads(raw_value)
     except json.JSONDecodeError as exc:
         raise ValueError(f"{name} must contain valid JSON") from exc
-
-
-# Required Supabase environment variables
-SUPABASE_ES256_PUBLIC_JWK = load_json_env_var("SUPABASE_ES256_PUBLIC_JWK")
-SUPABASE_PROJECT_URL = get_env_var("SUPABASE_PROJECT_URL")
-SUPABASE_PUBLIC_KEY = get_env_var("SUPABASE_PUBLIC_KEY")
-SUPABASE_SECRET_KEY = get_env_var("SUPABASE_SECRET_KEY")

@@ -2,8 +2,18 @@
 # PYTEST CONFIGURATION
 # ==========================================================
 [tool.pytest.ini_options]
+
+# ----------------------------------------------------------
 # Django settings module used for testing
-DJANGO_SETTINGS_MODULE = "app.core.settings.test"
+# ----------------------------------------------------------
+# In Continuous Integration (CI) environments, this variable
+# is set via the "environment" section in compose.test-ci.yml.
+#
+# In local development, we use the compose.dev.yml container,
+# which loads app.core.settings.dev as the default.
+# ----------------------------------------------------------
+DJANGO_SETTINGS_MODULE="app.core.settings.dev"
+
 
 # Patterns for test file discovery
 python_files = ["tests.py", "test_*.py", "*_tests.py"]

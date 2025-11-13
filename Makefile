@@ -6,9 +6,9 @@
 DOCKER_DIR = infra/docker
 
 # Compose files
-COMPOSE_FILES_BASE = -f $(DOCKER_DIR)/docker-compose.base
-COMPOSE_FILES_DEV = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.dev
-COMPOSE_FILES_TEST_CI = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/docker-compose.test-ci
+COMPOSE_FILES_BASE = -f $(DOCKER_DIR)/compose.base.yml
+COMPOSE_FILES_DEV = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/compose.dev.yml
+COMPOSE_FILES_TEST_CI = ${COMPOSE_FILES_BASE} -f $(DOCKER_DIR)/compose.test-ci.yml
 
 # ======================================================
 # HELP
@@ -32,12 +32,9 @@ help:
 	@echo ""
 	@echo "🧪 Testing:"
 	@echo "  make test              - Run tests without coverage (use CMD=<test> for specific tests)"
+	@echo "  make test-debug        - Run tests with debugpy (use CMD=<test> for specific tests)"
 	@echo "  make test-cov          - Run tests with coverage report (use CMD=<test> for specific tests)"
 	@echo "  make tests-ci          - Run tests in CI environment"
-	@echo ""
-	@echo "🐛 Debug (attach debugger to port 5679):"
-	@echo "  make test-debug        - Run tests with debugpy (use CMD=<test> for specific tests)"
-	@echo "  make test-cov-debug    - Run tests with coverage and debugpy (use CMD=<test>)"
 	@echo ""
 	@echo "✅ Code Quality:"
 	@echo "  make lint              - Run Ruff linter & formatter (auto-fix)"
@@ -107,38 +104,28 @@ createsuperuser: up
 	docker compose $(COMPOSE_FILES_DEV) exec backend python manage.py createsuperuser
 
 # ======================================================
-# DEBUG COMMANDS (with debugpy)
+# TESTING COMMANDS
 # ======================================================
+
+.PHONY: test
+test: up
+	@echo "🚀 Running tests (dev container with dev database)..."
+	docker compose $(COMPOSE_FILES_DEV) exec backend pytest -vv --no-cov $(CMD)
 
 .PHONY: test-debug
 test-debug: up
 	@echo "🐛 Running tests with debugpy (waiting for debugger to attach)..."
 	@echo "💡 Attach your debugger to port 5679"
 	@echo "💡 Use CMD=<test> to run specific tests"
+	@echo "💡 Using dev database for debugging"
 	docker compose $(COMPOSE_FILES_DEV) exec backend python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5679 --wait-for-client -m pytest -vv --no-cov $(CMD)
-
-.PHONY: test-cov-debug
-test-cov-debug: up
-	@echo "🐛 Running tests with coverage and debugpy (waiting for debugger to attach)..."
-	@echo "💡 Attach your debugger to port 5679"
-	@echo "💡 Use CMD=<test> to run specific tests"
-	docker compose $(COMPOSE_FILES_DEV) exec backend python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5679 --wait-for-client -m pytest $(CMD)
-
-# ======================================================
-# TESTING COMMANDS
-# ======================================================
-
-.PHONY: test
-test: up
-	@echo "🚀 Running tests (dev container)..."
-	docker compose $(COMPOSE_FILES_DEV) exec backend pytest -vv --no-cov $(CMD)
 
 .PHONY: test-cov
 test-cov: up
-	@echo "🚀 Running tests in dev container (with coverage)..."
+	@echo "🚀 Running tests in dev container (with coverage and dev database)..."
 	docker compose $(COMPOSE_FILES_DEV) exec backend pytest $(CMD)
 
-.PHONE: tests-ci
+.PHONY: tests-ci
 tests-ci:
 	@echo "🧪 Running tests (test container)..."
 	docker compose $(COMPOSE_FILES_TEST_CI) up \
@@ -200,13 +187,13 @@ security-check:
 quality-checks:
 	@echo "🔍 Running code quality checks..."
 	@echo ""
-	@printf "  Lint check...................... "
+	@printf "  Lint check..................................... "
 	@make lint-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
-	@printf "  Pre-commit hooks validations.... "
+	@printf "  Pre-commit hooks validations................... "
 	@make hooks-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
-	@printf "  Detect secrets.................. "
+	@printf "  Detect secrets..(detect-secrets-scan , audit).. "
 	@make detect-secrets > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
-	@printf "  Security scan (Bandit + Audit).. "
+	@printf "  Security scan (Bandit + Audit)................. "
 	@make security-check > /dev/null 2>&1 && echo "✅ PASSED" || echo "❌ FAILED"
 	@echo ""
 	@echo "✅ All quality checks completed"

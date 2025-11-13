@@ -1,9 +1,7 @@
 from .base import *  # noqa: F403
 from .base import INSTALLED_APPS, REST_FRAMEWORK
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+# Spectacular configuration for OpenAPI
 INSTALLED_APPS += [
     "drf_spectacular",
     "drf_spectacular_sidecar",
