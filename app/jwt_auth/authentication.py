@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-class SupabaseJWTAuthentication(authentication.BaseAuthentication):
+class JWTAuthentication(authentication.BaseAuthentication):
     """
-    Authenticate requests using a Supabase-issued JWT token.
+    Authenticate requests using a JWT token.
     """
 
     keyword = "Bearer"
@@ -24,18 +24,18 @@ class SupabaseJWTAuthentication(authentication.BaseAuthentication):
             return None  # DRF: no credentials → let other authenticators run
 
         token = auth_header[len(self.keyword) :].strip()
-        logger.debug("Authenticating Supabase JWT...")
+        logger.debug("Authenticating JWT...")
 
         # Decode the token and validate structure
         try:
-            payload = decode_supabase_jwt(token)
+            payload = decode_jwt_auth_jwt(token)
         except exceptions.AuthenticationFailed:
             raise
         except Exception as exc:
             logger.exception("Unexpected JWT decoding failure.")
             raise exceptions.AuthenticationFailed("Invalid or expired token.") from exc
 
-        # Extract user ID (Supabase uses 'sub' UUID)
+        # Extract user ID
         user_id = payload.get("sub")
         user_email = payload.get("email")
 
@@ -51,10 +51,10 @@ class SupabaseJWTAuthentication(authentication.BaseAuthentication):
 
         # Look up the local user
         try:
-            user = User.objects.get(supabase_id=user_uuid)
+            user = User.objects.get(auth_id=user_uuid)
         except User.DoesNotExist as udne:
             logger.warning(
-                "Supabase user %s (%s) not found in local DB.",
+                "User %s (%s) in JWT not found in local DB.",
                 user_email,
                 user_uuid,
             )
@@ -64,9 +64,9 @@ class SupabaseJWTAuthentication(authentication.BaseAuthentication):
         return (user, None)
 
 
-def decode_supabase_jwt(token: str) -> dict:
+def decode_jwt_auth_jwt(token: str) -> dict:
     """
-    Decode a Supabase JWT using the correct algorithm (ES256).
+    Decode a JWT using the correct algorithm (ES256).
     Validates signature, expiration, and audience.
     """
     try:
@@ -88,7 +88,7 @@ def decode_supabase_jwt(token: str) -> dict:
 
 def _decode_es256(token: str) -> dict:
     """
-    Decode an ES256 Supabase JWT using the public JWK provided in settings.
+    Decode an ES256 JWT using the public JWK provided in settings.
     """
     logger.debug("Decoding ES256 token...")
 
@@ -108,5 +108,5 @@ def _decode_es256(token: str) -> dict:
         token,
         public_key,
         algorithms=["ES256"],
-        audience="authenticated",  # Supabase default
+        audience="authenticated",
     )

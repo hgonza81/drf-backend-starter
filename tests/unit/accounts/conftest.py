@@ -23,7 +23,7 @@ def regular_user(db):
         email="user@example.com",
         password="userpass",
         is_staff=False,
-        supabase_id="550e8400-e29b-41d4-a716-446655440000",
+        auth_id="550e8400-e29b-41d4-a716-446655440000",
     )
 
 
@@ -33,7 +33,7 @@ def another_user(db):
         email="another@example.com",
         password="userpass",
         is_staff=False,
-        supabase_id="550e8400-e29b-41d4-a716-446655440001",
+        auth_id="550e8400-e29b-41d4-a716-446655440001",
     )
 
 
@@ -43,5 +43,5 @@ def not_in_db_user(db):
         email="new.user@example.com",
         password="userpass",
         is_staff=False,
-        supabase_id="550e8400-e29b-41d4-a716-446655440001",
+        auth_id="550e8400-e29b-41d4-a716-446655440001",
     )

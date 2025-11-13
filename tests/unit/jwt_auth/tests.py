@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
 
-from app.jwt_auth.authentication import SupabaseJWTAuthentication
+from app.jwt_auth.authentication import JWTAuthentication
 from tests.unit.jwt_auth.conftest import make_test_jwt
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ User = get_user_model()
 
 # Simple DRF view to test authentication manually
 class ProtectedView(APIView):
-    authentication_classes = [SupabaseJWTAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -36,7 +36,7 @@ def test_jwt_auth_success():
     token = make_test_jwt(email=test_email, user_id=test_user_id)
 
     # Create the user in the local database
-    User.objects.get_or_create(email=test_email, defaults={"supabase_id": test_user_id})
+    User.objects.get_or_create(email=test_email, defaults={"auth_id": test_user_id})
 
     factory = APIRequestFactory()
     request = factory.get(

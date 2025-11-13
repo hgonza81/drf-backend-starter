@@ -137,7 +137,7 @@ AUTH_USER_MODEL = "accounts.User"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "app.jwt_auth.authentication.SupabaseJWTAuthentication",
+        "app.jwt_auth.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
 }

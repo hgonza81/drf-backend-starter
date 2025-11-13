@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
-            "supabase_id",
+            "auth_id",
             "is_active",
             "is_staff",
             "date_joined",

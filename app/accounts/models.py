@@ -34,7 +34,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=255, blank=True, default="")
     last_name = models.CharField(max_length=255, blank=True, default="")
-    supabase_id = models.UUIDField(unique=True, blank=True, null=True)
+    auth_id = models.UUIDField(unique=True, blank=True, null=True)
 
     objects = UserManager()
 

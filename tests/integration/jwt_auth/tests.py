@@ -10,7 +10,7 @@ from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
 from supabase import Client, create_client
 
-from app.jwt_auth.authentication import SupabaseJWTAuthentication
+from app.jwt_auth.authentication import JWTAuthentication
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -18,7 +18,7 @@ User = get_user_model()
 
 # Simple DRF view to test authentication manually
 class ProtectedView(APIView):
-    authentication_classes = [SupabaseJWTAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -54,9 +54,7 @@ def test_supabase_real_authentication():
     supabase_user_id = auth_response.user.id
 
     # Create the user in the local database (since our auth doesn't auto-create)
-    User.objects.get_or_create(
-        email=test_email, defaults={"supabase_id": supabase_user_id}
-    )
+    User.objects.get_or_create(email=test_email, defaults={"auth_id": supabase_user_id})
 
     # Test our authentication backend with the real token
     factory = APIRequestFactory()
@@ -72,6 +70,6 @@ def test_supabase_real_authentication():
     assert response.data["message"] == "Authenticated"
     # The user email should be in the response
     assert test_email in response.data["user"]
-    assert User.objects.filter(
-        email=test_email, supabase_id=supabase_user_id
-    ).exists(), "User should exist locally with correct supabase_id"
+    assert User.objects.filter(email=test_email, auth_id=supabase_user_id).exists(), (
+        "User should exist locally with correct auth_id"
+    )

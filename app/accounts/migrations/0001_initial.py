@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
                     models.CharField(blank=True, default="", max_length=255),
                 ),
                 ("last_name", models.CharField(blank=True, default="", max_length=255)),
-                ("supabase_id", models.UUIDField(blank=True, null=True, unique=True)),
+                ("auth_id", models.UUIDField(blank=True, null=True, unique=True)),
                 (
                     "groups",
                     models.ManyToManyField(

@@ -10,7 +10,7 @@ class UserAdmin(BaseUserAdmin):
     ordering = ["-date_joined"]
     list_display = ["email", "full_name", "is_staff", "is_active"]
     search_fields = ["email", "first_name", "last_name"]
-    readonly_fields = ("supabase_id",)
+    readonly_fields = ("auth_id",)
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
@@ -36,7 +36,7 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
-        ("Supabase", {"fields": ("supabase_id",)}),
+        ("Auth API", {"fields": ("auth_id",)}),
     )
 
     add_fieldsets = (
