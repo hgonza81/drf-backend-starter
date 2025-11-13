@@ -29,6 +29,7 @@ jobs:
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           SUPABASE_AUTH_TEST_EMAIL: ${{ secrets.SUPABASE_AUTH_TEST_EMAIL }}
           SUPABASE_AUTH_TEST_PASSWORD: ${{ secrets.SUPABASE_AUTH_TEST_PASSWORD }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
         run: |
           echo "🧩 Running pytest inside container..."
           make tests-ci
